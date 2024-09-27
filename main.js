@@ -6,6 +6,8 @@ const createWindow = () => {
     height: 600,
   });
 
+  win.webContents.openDevTools()
+
   win.loadFile("index.html");
 };
 
@@ -23,4 +25,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
-
