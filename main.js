@@ -6,7 +6,8 @@ const createWindow = () => {
     height: 600,
   });
 
-  win.webContents.openDevTools()
+  // uncomment this to unlock chrome devtools
+  // win.webContents.openDevTools()
 
   win.loadFile("index.html");
 };
