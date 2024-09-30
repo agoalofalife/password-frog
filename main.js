@@ -34,9 +34,16 @@ app.whenReady().then(() => {
   // Add icon for Tray bar
   const path = require('path');
   // for examle add patch for icon, it will be fixed. Check dir 'icons'
-  const iconPath = path.join(__dirname, 'icons', 'frogIcon.jpg');
+  const iconPath = path.join(__dirname, 'icons', 'frogIcon.png');
   const icon = nativeImage.createFromPath(iconPath);
+  icon.resize({width: 16, height:16});
   tray = new Tray(icon);
+
+  //Add function hide and show when y double click on ison WITHOUT contextMenu
+  //I dont know how but with "CLICK" ITS WORK BUT WITH "DOUBLE-CLICK" NOT WORK, mb conflict with contextMenu?
+  tray.on('click', () => {
+    win.isVisible() ? win.hide() : win.show();
+  });
   //Add cont menu for click on Tray bar icon 
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Open Frog-app', type: 'normal', 
@@ -54,14 +61,8 @@ app.whenReady().then(() => {
     },
   ])
 
-  tray.setToolTip('Frog-app.')          //NEED TO TEST
-  tray.setContextMenu(contextMenu)
-
-  /*Function to open app if y use double-click on Tray-bar-icon
-  ITS NOT WORK NEED TAKES TIME TO THINK 
-  tray.on('double-click', () => {
-    win.show();
-  });*/
+  tray.setToolTip('Frog-app.');          //NEED TO TEST
+  tray.setContextMenu(contextMenu);
 })
 
 //Quit the app when all windows are closed (Windows & Linux)
