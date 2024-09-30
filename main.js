@@ -4,10 +4,18 @@ const createWindow = () => {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      zoomFactor: 1
+    },
+    resizable: true, // Ensures the window can be resized
+    fullscreenable: true, // Allow fullscreen
   });
 
   // uncomment this to unlock chrome devtools
   // win.webContents.openDevTools()
+
+  win.setMinimumSize(200, 200)
 
   win.loadFile("index.html");
 };

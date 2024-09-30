@@ -3,6 +3,7 @@ html, body {
     height: 100%;
     margin: 0;
     background-color: #f4f4f9;
+    overflow-x: hidden;
 }
 
 /* Wrapper fills the entire viewport */
@@ -11,6 +12,7 @@ html, body {
     flex-direction: column;
     height: 100%;
     padding: 2%;
+    overflow: hidden;
 }
 
 /* Form fills the wrapper */
