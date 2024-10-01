@@ -1,5 +1,5 @@
-const { app, BrowserWindow, screen } = require("electron");
-const dotenv = require('dotenv');
+import { app, BrowserWindow, screen } from "electron";
+import dotenv from 'dotenv';
 
 // load env variables
 dotenv.config();
