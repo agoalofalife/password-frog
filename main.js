@@ -1,9 +1,21 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, screen } = require("electron");
+const dotenv = require('dotenv');
+
+// load env variables
+dotenv.config();
 
 const createWindow = () => {
+
+  // Get the primary display (the main screen the app will open on)
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  // Set width and height as percentages of the screen's size
+  const winWidth = Math.floor(width * 0.8); // 80% of screen width
+  const winHeight = Math.floor(height * 0.8); // 80% of screen height
+
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: winWidth,
+    height: winHeight,
     webPreferences: {
       nodeIntegration: true,
       zoomFactor: 1
@@ -12,8 +24,10 @@ const createWindow = () => {
     fullscreenable: true, // Allow fullscreen
   });
 
-  // uncomment this to unlock chrome devtools
-  // win.webContents.openDevTools()
+  // Only open DevTools in local environment!
+  if (process.env.APP_ENV === 'local') {
+    win.webContents.openDevTools(); 
+  }
 
   win.setMinimumSize(200, 200)
 
