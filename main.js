@@ -1,4 +1,6 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage } = require("electron");
+import { app, BrowserWindow, Tray, Menu, nativeImage } from "electron";
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
 
 let win;
 let tray;
@@ -32,7 +34,8 @@ app.whenReady().then(() => {
 
 
   // Add icon for Tray bar
-  const path = require('path');
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
   // for examle add patch for icon, it will be fixed. Check dir 'icons'
   const iconPath = path.join(__dirname, 'icons', 'frogIcon.png');
   const icon = nativeImage.createFromPath(iconPath);

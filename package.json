@@ -1,6 +1,7 @@
 {
   "name": "password-frog",
   "version": "0.0.0",
+  "type": "module",
   "description": "",
   "main": "main.js",
   "scripts": {
