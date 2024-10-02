@@ -1,0 +1,56 @@
+/* Ensure html and body take up full height */
+html, body {
+    height: 100%;
+    margin: 0;
+    background-color: #f4f4f9;
+    overflow-x: hidden;
+}
+
+/* Wrapper fills the entire viewport */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2%;
+    overflow: hidden;
+}
+
+/* Form fills the wrapper */
+.form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Form group fills the remaining space */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Textarea fills the form group */
+.textarea {
+    flex: 1;
+    width: 100%;
+    resize: none; /* Prevent manual resizing */
+    background-color: #e3eaf5;
+    border: 1px solid #b0c4de;
+    color: #333333;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+/* Adjust the submit button */
+.btn {
+    background-color: #4a90e2;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    align-self: center;
+    margin-top: 20px;
+}
