@@ -28,7 +28,7 @@ const createWindow = () => {
 
   // Only open DevTools in local environment!
   if (process.env.APP_ENV === 'local') {
-    win.webContents.openDevTools(); 
+    window.webContents.openDevTools(); 
   }
 
   window.setMinimumSize(200, 200)
