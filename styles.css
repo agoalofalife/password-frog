@@ -56,20 +56,26 @@ html, body {
 }
 
 .passwordWindowWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Align items to the bottom */
+    height: 100vh; /* Full viewport height */
+    background-color: #333C45;
+    background-position: top;
     background-image: url('logo.webp');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
+    background-position: center -80px;
+
 }
 
-.passwordWindowInput{
-    padding-top: 10%;
-}
 
-.passwordWindowBtn{
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: auto;
+.passwordWindowForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    width: 100%; /* Ensure the form takes full width */
     padding-bottom: 5%;
 }
 
