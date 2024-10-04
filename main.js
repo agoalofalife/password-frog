@@ -34,13 +34,41 @@ const createWindow = () => {
   win.loadFile("index.html");
 };
 
+const passwordWindow = () => {
+
+  // Get the primary display (the main screen the app will open on)
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  // Set width and height as percentages of the screen's size
+  const winWidth = 500
+  const winHeight = 500
+
+  const win = new BrowserWindow({
+    width: winWidth,
+    height: winHeight,
+    webPreferences: {
+      nodeIntegration: true,
+      zoomFactor: 1
+    },
+    resizable: false, // Ensures the window can be resized
+    fullscreenable: false, // Allow fullscreen
+  });
+
+  // Only open DevTools in local environment!
+  if (process.env.APP_ENV === 'local') {
+    win.webContents.openDevTools(); 
+  }
+
+  win.loadFile("passwordWindow.html");
+};
+
 app.whenReady().then(() => {
-  createWindow()
+  passwordWindow()
 
   // macOS apps generally continue running even without any windows open. 
   // Activating the app when no windows are available should open a new one.
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) passwordWindow()
   })
 });
 

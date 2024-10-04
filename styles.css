@@ -54,3 +54,22 @@ html, body {
     align-self: center;
     margin-top: 20px;
 }
+
+.passwordWindowWrapper {
+    background-image: url('logo.webp');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.passwordWindowInput{
+    padding-top: 10%;
+}
+
+.passwordWindowBtn{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    padding-bottom: 5%;
+}
+
