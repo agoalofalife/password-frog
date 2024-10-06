@@ -49,8 +49,10 @@ app.whenReady().then(() => {
   // Add icon for Tray bar
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  // for examle add patch for icon, it will be fixed. Check dir 'icons'
-  const iconPath = path.join(__dirname, "icons", "patch.ico");
+  /*use template images for a menu bar (Tray) icon, so it can adapt to both light and dark menu bars.
+  On platforms that support high pixel density displays (such as Apple Retina), we can append @2x after image's base 
+  filename to mark it as a 2x scale high resolution image. */
+  const iconPath = path.join(__dirname, "icons", "frogIcon.png");
   const icon = nativeImage.createFromPath(iconPath);
   icon.resize({ width: 16, height: 16 });
   let tray = new Tray(icon);
