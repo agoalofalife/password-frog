@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, nativeTheme } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
@@ -52,7 +52,7 @@ app.whenReady().then(() => {
   /*use template images for a menu bar (Tray) icon, so it can adapt to both light and dark menu bars.
   On platforms that support high pixel density displays (such as Apple Retina), we can append @2x after image's base 
   filename to mark it as a 2x scale high resolution image. */
-  const iconPath = path.join(__dirname, "icons", "frogIcon.png");
+  const iconPath = path.join(__dirname, "icons", "frogIconTemplate.png");
   const icon = nativeImage.createFromPath(iconPath);
   icon.resize({ width: 16, height: 16 });
   let tray = new Tray(icon);
