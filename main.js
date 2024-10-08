@@ -76,6 +76,11 @@ app.whenReady().then(() => {
     },
   ]);
 
+  //add Workaround for Linux for context menu
+  if (process.platform === "linux") {
+    tray.setContextMenu(contextMenu);
+  }
+  
   tray.setToolTip("Frog-app.");
 });
 
