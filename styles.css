@@ -63,7 +63,7 @@ html, body {
 }
 
 .passwordWindowInput{
-    padding-top: 10%;
+    padding-top: 5%;
 }
 
 .passwordWindowBtn{
@@ -73,3 +73,6 @@ html, body {
     padding-bottom: 5%;
 }
 
+.form-check{
+    color: white;
+}
