@@ -2,6 +2,7 @@ import { app, BrowserWindow, screen, Tray, Menu, nativeImage } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
+import fs from "fs";
 
 // load env variables
 dotenv.config();
@@ -58,11 +59,11 @@ app.whenReady().then(() => {
   icon.resize({ width: 16, height: 16 });
   let tray = new Tray(icon);
 
-  tray.on('click', () => {
+  tray.on("click", () => {
     window.isVisible() ? window.hide() : window.show();
     tray.closeContextMenu();
   })
-  tray.on('right-click', () => {
+  tray.on("right-click", () => {
     tray.popUpContextMenu(contextMenu)
   })
   //Add cont menu for click on Tray bar icon
@@ -82,6 +83,31 @@ app.whenReady().then(() => {
   }
   
   tray.setToolTip("Frog-app.");
+
+  // Path for dir with txt file
+  const userFilesDir = path.join(__dirname, "User files");
+
+  // Path for file in dir and add const
+  const filePath = path.join(userFilesDir, "user_file.txt");
+
+  // add dir 'User files', if its not
+  (function createFileIfNotExists() {
+    if (!fs.existsSync(userFilesDir)) {
+      fs.mkdirSync(userFilesDir); 
+    }
+    
+    //Abd add file 'user_file', if its not
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, "", "utf8");
+
+    // Check console
+      console.log(`File created at: ${filePath}`);
+    } else {
+    // Check console
+      console.log(`File already exists at: ${filePath}`);
+    }
+  })();
+  
 });
 
 // macOS apps generally continue running even without any windows open.
