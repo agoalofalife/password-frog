@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, dialog } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
@@ -102,6 +102,12 @@ app.whenReady().then(() => {
 
     // Check console
       console.log(`File created at: ${filePath}`);
+    //Add message with a greeting if the user has opened the application for the first time
+      dialog.showMessageBox(window, {
+        title: 'Welcome to Frogg-app',
+        message: 'TEXT COMING SOON.',
+        type: 'info'
+      });
     } else {
     // Check console
       console.log(`File already exists at: ${filePath}`);
