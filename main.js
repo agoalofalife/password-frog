@@ -102,7 +102,6 @@ app.whenReady().then(() => {
     }
   });
   
-
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Close Frog-app",
