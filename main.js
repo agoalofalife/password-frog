@@ -1,8 +1,7 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
-import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -10,18 +9,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let welcomeView; // variable for the welcome page
 let mainView; // variable for the main text edit page
-
+let tray = null; // Tray should be initialized properly
 
 // load env variables
 dotenv.config();
 
-
 const renderMainWindow = () => {
-
-  // Get the primary display (the main screen the app will open on)
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
-  // Set width and height as percentages of the screen's size
   const windowWidth = Math.floor(width * 0.8); // 80% of screen width
   const windowHeight = Math.floor(height * 0.8); // 80% of screen height
 
@@ -29,162 +24,119 @@ const renderMainWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // Use the new __dirname
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
       zoomFactor: 1
     },
-    resizable: true, // Ensures the window can be resized
-    fullscreenable: true, // Allow fullscreen
+    resizable: true,
+    fullscreenable: true,
   });
-};
 
-  // Only open DevTools in local environment!
-  if (process.env.APP_ENV === 'local') {
+  if (process.env.APP_ENV === "local") {
     mainView.webContents.openDevTools(); 
   }
 
-  mainView.setMinimumSize(200, 200)
-
+  mainView.setMinimumSize(200, 200);
   mainView.loadFile("index.html");
+
+  // Handle close event for the main window
+  mainView.on("close", (event) => {
+    if (!app.isQuitting) {
+      event.preventDefault();
+      mainView.hide(); // Hide the main window instead of closing
+    }
+  });
 };
 
 const renderPasswordWindow = () => {
-
-  // Get the primary display (the main screen the app will open on)
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-
-  // Set width and height as percentages of the screen's size
-  const windowWidth = 600
-  const windowHeight = 600
+  const windowWidth = 600;
+  const windowHeight = 600;
 
   welcomeView = new BrowserWindow({
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // Use preload script
-      nodeIntegration: false, // Disable nodeIntegration for security
-      contextIsolation: true, // Ensure contextIsolation is enabled
+      preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
-    resizable: false, // Ensures the window can be resized
-    fullscreenable: false, // Allow fullscreen
+    resizable: false,
+    fullscreenable: false,
   });
 
-  // Only open DevTools in local environment!
-  if (process.env.APP_ENV === 'local') {
-    welcomeView.webContents.openDevTools(); 
+  if (process.env.APP_ENV === "local") {
+    welcomeView.webContents.openDevTools();
   }
 
   welcomeView.loadFile("passwordWindow.html");
+
+  // Handle close event for the password window
+  welcomeView.on("close", (event) => {
+    if (!app.isQuitting) {
+      event.preventDefault();
+      welcomeView.hide(); // Hide the welcome window instead of closing
+    }
+  });
 };
 
 app.whenReady().then(() => {
-  renderPasswordWindow()
+  renderPasswordWindow();
 
-  // macOS apps generally continue running even without any windows open. 
-  // Activating the app when no windows are available should open a new one.
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) renderPasswordWindow()
-  })
-});
-
-  window.setMinimumSize(200, 200);
-
-  window.loadFile("index.html");
-
-  //add event for hide and close app
-  window.on("close", (event) => {
-    if (!app.isQuitting) {
-      event.preventDefault();
-      window.hide();
-    }
-  });
-
-  /*use template images for a menu bar (Tray) icon, so it can adapt to both light and dark menu bars.
-  On platforms that support high pixel density displays (such as Apple Retina), we can append @2x after image's base
-  filename to mark it as a 2x scale high resolution image. */
+  // Create Tray icon
   const iconPath = path.join(__dirname, "icons", "frogIconTemplate.png");
-  const icon = nativeImage.createFromPath(iconPath);
-  icon.resize({ width: 16, height: 16 });
-  let tray = new Tray(icon);
+  const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+  
+  tray = new Tray(icon);
 
   tray.on("click", () => {
-    window.isVisible() ? window.hide() : window.show();
-    tray.closeContextMenu();
-  })
-  tray.on("right-click", () => {
-    tray.popUpContextMenu(contextMenu)
-  })
-
-  //Add cont menu for click on Tray bar icon
+    const currentView = mainView || welcomeView;
+    if (currentView && !currentView.isDestroyed()) {
+      if (currentView.isVisible()) {
+        //hide if window open
+        currentView.hide(); 
+      } else {
+        //show if window hide
+        currentView.show();
+        currentView.focus();
+      }
+    }
+  });
+  
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Close Frog-app",
       type: "normal",
       click: () => {
-        app.exit(0);
+        app.isQuitting = true; // for close app in cotext menu
+        if (mainView) {
+          mainView.close();
+        }
+        app.quit();
       },
     },
   ]);
 
-  //add Workaround for Linux for context menu
-  if (process.platform === "linux") {
-    tray.setContextMenu(contextMenu);
-  }
-  
+  tray.setContextMenu(contextMenu);
   tray.setToolTip("Frog-app.");
 
-  // Path for dir with txt file
-  const userFilesDir = path.join(__dirname, "User files");
-
-  // Path for file in dir and add const
-  const filePath = path.join(userFilesDir, "user_file.txt");
-
-  // add dir 'User files', if its not
-  (function createFileIfNotExists() {
-    if (!fs.existsSync(userFilesDir)) {
-      fs.mkdirSync(userFilesDir); 
-    }
-    
-    //Abd add file 'user_file', if its not
-    if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, "", "utf8");
-
-    // Check console
-      console.log(`File created at: ${filePath}`);
-    //Add message with a greeting if the user has opened the application for the first time
-      dialog.showMessageBox(window, {
-        title: 'Welcome to Frogg-app',
-        message: 'TEXT COMING SOON.',
-        type: 'info'
-      });
-    } else {
-    // Check console
-      console.log(`File already exists at: ${filePath}`);
-    }
-  })();
-  
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) renderPasswordWindow();
+  });
 });
 
-// macOS apps generally continue running even without any windows open.
-// Activating the app when no windows are available should open a new one.
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
-//Quit the app when all windows are closed (Windows & Linux)
+// Quit the app when all windows are closed (Windows & Linux)
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-
+// IPC handling for the password submission
 ipcMain.on('password-submitted', (event, password) => {
   console.log('Password received:', password);
-  // Close the password window
   if (welcomeView) {
     welcomeView.close();
     welcomeView = null;
   }
-  // Open the main window
   renderMainWindow();
 });
