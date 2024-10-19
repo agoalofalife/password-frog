@@ -1,7 +1,8 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain, dialog } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -124,6 +125,38 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) renderPasswordWindow();
   });
+
+  // Path for dir with txt file
+  const userFilesDir = path.join(__dirname, "User files");
+
+  // Path for file in dir and add const
+  const filePath = path.join(userFilesDir, "user_file.txt");
+
+  // add dir 'User files', if its not
+  (function createFileIfNotExists() {
+    if (!fs.existsSync(userFilesDir)) {
+      fs.mkdirSync(userFilesDir); 
+    }
+
+    //Abd add file 'user_file', if its not
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, "", "utf8");
+
+    // Check console
+      console.log(`File created at: ${filePath}`);
+
+      //Add message with a greeting if the user has opened the application for the first time
+      dialog.showMessageBox(welcomeView, {
+        title: "Welcome to Frogg-app",
+        message: "File has been created.",
+        type: "info"
+      });
+    } else {
+    // Check console
+      console.log(`File already exists at: ${filePath}`);
+    }
+  })();
+
 });
 
 // Quit the app when all windows are closed (Windows & Linux)
