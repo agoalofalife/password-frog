@@ -48,6 +48,30 @@ const renderMainWindow = () => {
       mainView.hide(); // Hide the main window instead of closing
     }
   });
+  
+  // Path for dir with txt file
+  const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
+  const filePath = path.resolve(process.env.USER_FILE_PATH);
+  console.log("File path:", filePath);
+
+  (function createFileIfNotExists() {
+    if (!fs.existsSync(userFilesDir)) {
+      fs.mkdirSync(userFilesDir); 
+    }
+
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, "", "utf8");
+
+      console.log(`File created at: ${filePath}`);
+
+      //Add message with a greeting if the user has opened the application for the first time
+      dialog.showMessageBox(welcomeView, {
+        title: "Welcome to Frogg-app",
+        message: "File has been created.",
+        type: "info"
+      });
+    } 
+  })();
 };
 
 const renderPasswordWindow = () => {
@@ -125,38 +149,6 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) renderPasswordWindow();
   });
-
-  // Path for dir with txt file
-  const userFilesDir = path.join(__dirname, "User files");
-
-  // Path for file in dir and add const
-  const filePath = path.join(userFilesDir, "user_file.txt");
-
-  // add dir 'User files', if its not
-  (function createFileIfNotExists() {
-    if (!fs.existsSync(userFilesDir)) {
-      fs.mkdirSync(userFilesDir); 
-    }
-
-    //Abd add file 'user_file', if its not
-    if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, "", "utf8");
-
-    // Check console
-      console.log(`File created at: ${filePath}`);
-
-      //Add message with a greeting if the user has opened the application for the first time
-      dialog.showMessageBox(welcomeView, {
-        title: "Welcome to Frogg-app",
-        message: "File has been created.",
-        type: "info"
-      });
-    } else {
-    // Check console
-      console.log(`File already exists at: ${filePath}`);
-    }
-  })();
-
 });
 
 // Quit the app when all windows are closed (Windows & Linux)
