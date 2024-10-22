@@ -15,6 +15,12 @@ let tray = null; // Tray should be initialized properly
 // load env variables
 dotenv.config();
 
+if (!process.env.USER_FILE_PATH) {
+  console.error('Error: USER_FILE_PATH is not defined in the .env file.');
+  console.log('Please check your .env file and set the USER_FILE_PATH variable.');
+  process.exit(1);
+}
+
 const renderMainWindow = () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
