@@ -4,7 +4,6 @@ import path, { dirname } from "path";
 import dotenv from "dotenv";
 import fs from "fs";
 
-const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 
@@ -14,7 +13,6 @@ let tray = null; // Tray should be initialized properly
 
 // load env variables
 dotenv.config();
-
 if (!process.env.USER_FILE_PATH) {
   console.error('Error: USER_FILE_PATH is not defined in the .env file.');
   console.log('Please check your .env file and set the USER_FILE_PATH variable.');
