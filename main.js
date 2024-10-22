@@ -115,7 +115,7 @@ app.whenReady().then(() => {
   
   tray = new Tray(icon);
 
-  tray.on("click", () => {
+  tray.on(process.platform === "lunux" ? "click" : "double-click", () => {
     const currentView = mainView || welcomeView;
     if (currentView && !currentView.isDestroyed()) {
       if (currentView.isVisible()) {
@@ -142,6 +142,10 @@ app.whenReady().then(() => {
       },
     },
   ]);
+
+  tray.on("right-click", () => {
+    tray.popUpContextMenu();
+  });
 
   tray.setContextMenu(contextMenu);
   tray.setToolTip("Frog-app.");
