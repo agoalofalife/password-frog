@@ -79,7 +79,6 @@ const renderMainWindow = () => {
 };
 
 const renderPasswordWindow = () => {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const windowWidth = 600;
   const windowHeight = 600;
 
@@ -119,7 +118,7 @@ app.whenReady().then(() => {
   
   tray = new Tray(icon);
 
-  tray.on(process.platform === "lunux" ? "click" : "double-click", () => {
+  tray.on(process.platform === "linux" ? "click" : "double-click", () => {
     const currentView = mainView || welcomeView;
     if (currentView && !currentView.isDestroyed()) {
       if (currentView.isVisible()) {
@@ -149,6 +148,23 @@ app.whenReady().then(() => {
 
   tray.on("right-click", () => {
     tray.popUpContextMenu();
+  });
+
+  tray.on("click", (event) => {
+    // Проверяем, если была нажата левая кнопка мыши
+    if (event.button === 0) {
+      const currentView = mainView || welcomeView;
+      if (currentView && !currentView.isDestroyed()) {
+        if (currentView.isVisible()) {
+          // Скрыть окно, если оно открыто
+          currentView.hide();
+        } else {
+          // Показать окно, если оно скрыто
+          currentView.show();
+          currentView.focus();
+        }
+      }
+    }
   });
 
   tray.setContextMenu(contextMenu);
