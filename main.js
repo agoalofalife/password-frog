@@ -118,18 +118,12 @@ app.whenReady().then(() => {
   
   tray = new Tray(icon);
 
-  tray.on(process.platform === "linux" ? "click" : "double-click", () => {
+  tray.on('click', () => {
     const currentView = mainView || welcomeView;
     if (currentView && !currentView.isDestroyed()) {
-      if (currentView.isVisible()) {
-        //hide if window open
-        currentView.hide(); 
-      } else {
-        //show if window hide
-        currentView.show();
-        currentView.focus();
-      }
+        currentView.isVisible() ? currentView.hide() : currentView.show();
     }
+    tray.closeContextMenu();
   });
   
   const contextMenu = Menu.buildFromTemplate([
@@ -147,24 +141,7 @@ app.whenReady().then(() => {
   ]);
 
   tray.on("right-click", () => {
-    tray.popUpContextMenu();
-  });
-
-  tray.on("click", (event) => {
-    // Проверяем, если была нажата левая кнопка мыши
-    if (event.button === 0) {
-      const currentView = mainView || welcomeView;
-      if (currentView && !currentView.isDestroyed()) {
-        if (currentView.isVisible()) {
-          // Скрыть окно, если оно открыто
-          currentView.hide();
-        } else {
-          // Показать окно, если оно скрыто
-          currentView.show();
-          currentView.focus();
-        }
-      }
-    }
+    tray.popUpContextMenu(contextMenu);
   });
 
   tray.setContextMenu(contextMenu);
