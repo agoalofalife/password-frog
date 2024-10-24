@@ -1,9 +1,9 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain, dialog } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
+import fs from "fs";
 
-const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 
@@ -13,6 +13,11 @@ let tray = null; // Tray should be initialized properly
 
 // load env variables
 dotenv.config();
+if (!process.env.USER_FILE_PATH) {
+  console.error('Error: USER_FILE_PATH is not defined in the .env file.');
+  console.log('Please check your .env file and set the USER_FILE_PATH variable.');
+  process.exit(1);
+}
 
 const renderMainWindow = () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -24,7 +29,7 @@ const renderMainWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
       zoomFactor: 1
@@ -33,8 +38,8 @@ const renderMainWindow = () => {
     fullscreenable: true,
   });
 
-  if (process.env.APP_ENV === 'local') {
-    mainView.webContents.openDevTools(); 
+  if (process.env.APP_ENV === "local") {
+    mainView.webContents.openDevTools();
   }
 
   mainView.setMinimumSize(200, 200);
@@ -47,10 +52,32 @@ const renderMainWindow = () => {
       mainView.hide(); // Hide the main window instead of closing
     }
   });
+
+  // Path for dir with txt file
+  const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
+  const filePath = path.resolve(process.env.USER_FILE_PATH);
+
+  (function createFileIfNotExists() {
+    if (!fs.existsSync(userFilesDir)) {
+      fs.mkdirSync(userFilesDir);
+    }
+
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, "", "utf8");
+
+      console.log(`File created at: ${filePath}`);
+
+      //Add message with a greeting if the user has opened the application for the first time
+      dialog.showMessageBox(welcomeView, {
+        title: "Welcome to Frogg-app",
+        message: "File has been created.",
+        type: "info"
+      });
+    }
+  })();
 };
 
 const renderPasswordWindow = () => {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const windowWidth = 600;
   const windowHeight = 600;
 
@@ -58,7 +85,7 @@ const renderPasswordWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -66,7 +93,7 @@ const renderPasswordWindow = () => {
     fullscreenable: false,
   });
 
-  if (process.env.APP_ENV === 'local') {
+  if (process.env.APP_ENV === "local") {
     welcomeView.webContents.openDevTools();
   }
 
@@ -87,30 +114,34 @@ app.whenReady().then(() => {
   // Create Tray icon
   const iconPath = path.join(__dirname, "icons", "frogIconTemplate.png");
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
-  
+
   tray = new Tray(icon);
 
   tray.on('click', () => {
-    if (mainView) { // Check if mainView exists
-      if (mainView.isVisible()) {
-        mainView.hide();
-      } else {
-        mainView.show();
-      }
-    } else {
-      console.error("mainView is not initialized");
+    const currentView = mainView || welcomeView;
+    if (currentView && !currentView.isDestroyed()) {
+        currentView.isVisible() ? currentView.hide() : currentView.show();
     }
+    tray.closeContextMenu();
   });
-  
+
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Close Frog-app",
       type: "normal",
       click: () => {
-        app.quit(); // Close the app on clicking the menu
+        app.isQuitting = true; // for close app in cotext menu
+        if (mainView) {
+          mainView.close();
+        }
+        app.quit();
       },
     },
   ]);
+
+  tray.on("right-click", () => {
+    tray.popUpContextMenu(contextMenu);
+  });
 
   tray.setContextMenu(contextMenu);
   tray.setToolTip("Frog-app.");
