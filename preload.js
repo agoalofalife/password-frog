@@ -2,4 +2,5 @@ const { contextBridge, ipcRenderer } = require('electron'); //can not use import
 
 contextBridge.exposeInMainWorld('electronAPI', {
   submitPassword: (password) => ipcRenderer.send('password-submitted', password),
+  sendText: (text) => ipcRenderer.send('save-text', text),
 });

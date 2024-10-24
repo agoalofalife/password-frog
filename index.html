@@ -18,9 +18,11 @@
             <div class="form-group flex-grow-1 w-100">
                 <textarea class="form-control textarea" placeholder="Enter the text to encrypt" id="textToEncrypt"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary mt-2">Submit</button>
+            <!-- Add new button with type "button" couse The standard behavior for a submit button is to submit a form. This causes the page to be reloaded or the URL to be change -->
+            <button type="button" class="btn btn-primary mt-2" id="saveButton">Save</button>
+            <button type="submit" class="btn btn-primary mt-2">Encrypt</button>
         </form>
     </div>    
-
+    <script src="renderer.js"></script>
 </body>
 </html>
