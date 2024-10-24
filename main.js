@@ -39,7 +39,7 @@ const renderMainWindow = () => {
   });
 
   if (process.env.APP_ENV === "local") {
-    mainView.webContents.openDevTools(); 
+    mainView.webContents.openDevTools();
   }
 
   mainView.setMinimumSize(200, 200);
@@ -52,15 +52,14 @@ const renderMainWindow = () => {
       mainView.hide(); // Hide the main window instead of closing
     }
   });
-  
+
   // Path for dir with txt file
   const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
   const filePath = path.resolve(process.env.USER_FILE_PATH);
-  console.log("File path:", filePath);
 
   (function createFileIfNotExists() {
     if (!fs.existsSync(userFilesDir)) {
-      fs.mkdirSync(userFilesDir); 
+      fs.mkdirSync(userFilesDir);
     }
 
     if (!fs.existsSync(filePath)) {
@@ -74,7 +73,7 @@ const renderMainWindow = () => {
         message: "File has been created.",
         type: "info"
       });
-    } 
+    }
   })();
 };
 
@@ -115,7 +114,7 @@ app.whenReady().then(() => {
   // Create Tray icon
   const iconPath = path.join(__dirname, "icons", "frogIconTemplate.png");
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
-  
+
   tray = new Tray(icon);
 
   tray.on('click', () => {
@@ -125,7 +124,7 @@ app.whenReady().then(() => {
     }
     tray.closeContextMenu();
   });
-  
+
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Close Frog-app",
