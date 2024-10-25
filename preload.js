@@ -1,5 +1,7 @@
-const { contextBridge, ipcRenderer } = require('electron'); //can not use import here
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  submitPassword: (password) => ipcRenderer.send('password-submitted', password),
+    submitPassword: (data) => ipcRenderer.send('password-submitted', data),
+    verifyPassword: (password) => ipcRenderer.send('verify-master-password', password),
+    onPasswordIncorrect: (callback) => ipcRenderer.on('password-incorrect', callback),
 });

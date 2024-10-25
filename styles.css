@@ -91,3 +91,21 @@ html, body {
 .form-check{
     color: white;
 }
+
+.passwordInputForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    width: 100%; /* Ensure the form takes full width */
+}
+
+.passwordInputField{
+    padding-top: 10%;
+}
+
+.passwordInputBtn{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    padding-bottom: 5%;
+}
