@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
 import fs from "fs";
+import sjcl from 'sjcl';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
