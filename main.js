@@ -76,11 +76,20 @@ const renderMainWindow = () => {
     }
   })();
 
-  ipcMain.on('save-text', (event, text) => {
+try {  ipcMain.on('save-text', (event, text) => {
     fs.writeFile(filePath, text, () => {
-        console.log("Good");
+      dialog.showMessageBox(welcomeView, {
+        message: "File has been saved.",
+        type: "info"
+      });
     });
   });
+  } catch(err) {
+    dialog.showMessageBox(welcomeView, {
+      message: err.message,
+      type: "info"
+    });
+  }
 
 };
 
