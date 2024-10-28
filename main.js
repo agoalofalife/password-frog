@@ -25,6 +25,9 @@ const renderMainWindow = () => {
 
   const windowWidth = Math.floor(width * 0.8); // 80% of screen width
   const windowHeight = Math.floor(height * 0.8); // 80% of screen height
+  // Path for dir with txt file
+  const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
+  const filePath = path.resolve(process.env.USER_FILE_PATH);
 
   mainView = new BrowserWindow({
     width: windowWidth,
@@ -54,10 +57,6 @@ const renderMainWindow = () => {
     }
   });
 
-  // Path for dir with txt file
-  const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
-  const filePath = path.resolve(process.env.USER_FILE_PATH);
-
   (function createFileIfNotExists() {
     if (!fs.existsSync(userFilesDir)) {
       fs.mkdirSync(userFilesDir);
@@ -77,7 +76,7 @@ const renderMainWindow = () => {
     }
   })();
 
-try {  ipcMain.on('save-text', (event, text) => {
+  try {  ipcMain.on('save-text', (event, text) => {
     fs.writeFile(filePath, text, () => {
       dialog.showMessageBox(welcomeView, {
         message: "File has been saved.",
@@ -91,7 +90,11 @@ try {  ipcMain.on('save-text', (event, text) => {
       type: "info"
     });
   }
-
+  
+  //Defines a handler for an asynchronous request sent from the renderer to the main process
+  ipcMain.handle('request-load-text', () => {
+    return fs.readFileSync(filePath, "utf8");
+  });
 };
 
 const renderPasswordWindow = () => {
