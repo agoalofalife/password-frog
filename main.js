@@ -95,6 +95,20 @@ const renderMainWindow = () => {
   ipcMain.handle('request-load-text', () => {
     return fs.readFileSync(filePath, "utf8");
   });
+  //Get text end encrypted it
+  ipcMain.handle('encrypt-text', (event, text) => {
+    const FIXED_PASSWORD = "your_fixed_password"; // NEED INSTALL PASSWOR FOR  SJCL 
+    const ENCRYPTED = sjcl.encrypt(FIXED_PASSWORD, text);
+    // Path for encrypted file
+    const ECTRYPTED_FILE_PATH = path.join(userFilesDir, "encrypted_file.txt");
+      
+    fs.writeFileSync(ECTRYPTED_FILE_PATH, ENCRYPTED, "utf8");
+    
+    dialog.showMessageBox(welcomeView, {
+      message: "File has been encrypted.",
+      type: "info"
+    });
+  });
 };
 
 const renderPasswordWindow = () => {
