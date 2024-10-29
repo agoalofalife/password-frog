@@ -11,6 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 let welcomeView; // variable for the welcome page
 let mainView; // variable for the main text edit page
 let tray = null; // Tray should be initialized properly
+let userPassword; // variable for save password
 
 // load env variables
 dotenv.config();
@@ -91,22 +92,20 @@ const renderMainWindow = () => {
     });
   }
   
-  //Defines a handler for an asynchronous request sent from the renderer to the main process
+  //read file and show it in app
   ipcMain.handle('request-load-text', () => {
     return fs.readFileSync(filePath, "utf8");
   });
-  //Get text end encrypted it
+
+  //Defines a handler for an asynchronous request sent from the renderer to the main process
   ipcMain.handle('encrypt-text', (event, text) => {
-    const FIXED_PASSWORD = "your_fixed_password"; // NEED INSTALL PASSWOR FOR  SJCL 
-    const ENCRYPTED = sjcl.encrypt(FIXED_PASSWORD, text);
-    // Path for encrypted file
+    const ENCRYPTED = sjcl.encrypt(userPassword, text);
     const ECTRYPTED_FILE_PATH = path.join(userFilesDir, "encrypted_file.txt");
-      
     fs.writeFileSync(ECTRYPTED_FILE_PATH, ENCRYPTED, "utf8");
     
     dialog.showMessageBox(welcomeView, {
-      message: "File has been encrypted.",
-      type: "info"
+        message: "File encrypted!",
+        type: "info"
     });
   });
 };
@@ -193,6 +192,7 @@ app.on("window-all-closed", () => {
 // IPC handling for the password submission
 ipcMain.on('password-submitted', (event, password) => {
   console.log('Password received:', password);
+  userPassword = password; // saved password
   if (welcomeView) {
     welcomeView.close();
     welcomeView = null;

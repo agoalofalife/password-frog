@@ -9,6 +9,6 @@ window.electronAPI.loadText().then(text => {
 });
 //for interaction with button for encrypt
 document.getElementById("EncryptButton").addEventListener("click", () => {
-  const FIXED_PASSWORD = "your_fixed_password"; // NEED INSTALL FIXED PASSWOR FOR  SJCL
-  window.electronAPI.textEncrypt(FIXED_PASSWORD);
+  const textToEncrypt = document.getElementById("textToEncrypt").value;
+  window.electronAPI.textEncrypt(textToEncrypt);
 });
