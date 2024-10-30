@@ -1,6 +1,6 @@
 document.querySelector('.passwordWindowForm').addEventListener('submit', (e) => {
   e.preventDefault();
-  const password = document.getElementById('masterPassword').value;
+  const password = document.getElementById('passwordInputField').value;
 
   // Initialize SJCL's random number generator
   sjcl.random.startCollectors();

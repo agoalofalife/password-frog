@@ -17,6 +17,9 @@ let mainView; // variable for the main text edit page
 let passwordInputWindow;  // variable for the password input window
 let tray = null; // Tray should be initialized properly
 
+// Disable hardware acceleration before app is ready
+app.disableHardwareAcceleration();
+
 // load env variables
 dotenv.config();
 if (!process.env.USER_FILE_PATH) {
