@@ -10,7 +10,7 @@ const userDataPath = app.getPath('userData');
 const passwordFilePath = path.join(userDataPath, 'master-password.json');
 
 console.log('User Data Path:', userDataPath);
-console.log('Password File Path:', passwordFilePath);
+console.info('Password File Path:', passwordFilePath);
 
 let welcomeView; // variable for the welcome page
 let mainView; // variable for the main text edit page
@@ -24,7 +24,7 @@ app.disableHardwareAcceleration();
 dotenv.config();
 if (!process.env.USER_FILE_PATH) {
   console.error('Error: USER_FILE_PATH is not defined in the .env file.');
-  console.log('Please check your .env file and set the USER_FILE_PATH variable.');
+  console.warn('Please check your .env file and set the USER_FILE_PATH variable.');
   process.exit(1);
 }
 
@@ -57,7 +57,7 @@ const renderMainWindow = () => {
   }
 
   mainView.setMinimumSize(200, 200);
-  mainView.loadFile("index.html");
+  mainView.loadFile("src/pages/main/index.html");
 
   // Handle close event for the main window
   mainView.on("close", (event) => {
@@ -80,7 +80,7 @@ const renderMainWindow = () => {
     if (!fs.existsSync(filePath)) {
         fs.writeFileSync(filePath, "", "utf8");
 
-        console.log(`File created at: ${filePath}`);
+        console.info(`File created at: ${filePath}`);
 
         // Show message in the main window
         dialog.showMessageBox(mainView, {
@@ -183,7 +183,7 @@ app.on("window-all-closed", () => {
 
 // IPC handling for the password submission
 ipcMain.on('password-submitted', (event, data) => {
-  console.log('Password data received:', data);
+  console.info('Password data received:', data);
 
   try {
       // Store the hashed password and salt
@@ -242,7 +242,7 @@ function renderPasswordInputWindow() {
     passwordInputWindow.webContents.openDevTools();
   }
 
-  passwordInputWindow.loadFile("passwordInput.html");
+  passwordInputWindow.loadFile("src/pages/password-input/passwordInput.html");
 
   // Handle close event for the password input window
   passwordInputWindow.on("close", (event) => {

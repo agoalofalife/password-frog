@@ -1,4 +1,3 @@
-
 document.getElementById('passwordInputForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const enteredPassword = document.getElementById('passwordInputField').value;
