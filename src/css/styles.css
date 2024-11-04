@@ -62,7 +62,7 @@ html, body {
     height: 100vh; /* Full viewport height */
     background-color: #333C45;
     background-position: top;
-    background-image: url('logo.webp');
+    background-image: url('../img/logo.webp');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;

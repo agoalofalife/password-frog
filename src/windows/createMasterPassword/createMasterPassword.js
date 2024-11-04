@@ -1,4 +1,4 @@
-import {hashPassword} from "./src/crypt.js";
+import {hashPassword} from "../../js/crypt.js";
 
 document.querySelector('.passwordWindowForm').addEventListener('submit', (e) => {
   e.preventDefault();

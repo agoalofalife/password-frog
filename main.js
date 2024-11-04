@@ -43,7 +43,7 @@ const renderMainWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "./src/js/preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
       zoomFactor: 1
@@ -57,7 +57,7 @@ const renderMainWindow = () => {
   }
 
   mainView.setMinimumSize(200, 200);
-  mainView.loadFile("src/pages/main/index.html");
+  mainView.loadFile("./src/windows/main/index.html");
 
   // Handle close event for the main window
   mainView.on("close", (event) => {
@@ -100,7 +100,7 @@ const renderPasswordWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "./src/js/preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -112,7 +112,7 @@ const renderPasswordWindow = () => {
     welcomeView.webContents.openDevTools();
   }
 
-  welcomeView.loadFile("passwordWindow.html");
+  welcomeView.loadFile("./src/windows/createMasterPassword/createMasterPassword.html");
 
   // Handle close event for the password window
   welcomeView.on("close", (event) => {
@@ -131,7 +131,7 @@ app.whenReady().then(() => {
   }
 
   // Create Tray icon
-  const iconPath = path.join(__dirname, "icons", "frogIconTemplate.png");
+  const iconPath = path.join(__dirname, "icons", "./src/icons/frogIconTemplate.png");
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
 
   tray = new Tray(icon);
@@ -230,7 +230,7 @@ function renderPasswordInputWindow() {
       width: 600,
       height: 600,
       webPreferences: {
-          preload: path.join(__dirname, "preload.js"),
+          preload: path.join(__dirname, "./src/js/preload.js"),
           nodeIntegration: false,
           contextIsolation: true,
       },
@@ -242,7 +242,7 @@ function renderPasswordInputWindow() {
     passwordInputWindow.webContents.openDevTools();
   }
 
-  passwordInputWindow.loadFile("src/pages/password-input/passwordInput.html");
+  passwordInputWindow.loadFile("./src/windows/password-input/passwordInput.html");
 
   // Handle close event for the password input window
   passwordInputWindow.on("close", (event) => {
