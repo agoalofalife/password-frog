@@ -1,5 +1,3 @@
-import {hashPassword} from "../../js/crypt.js";
-
 document.querySelector('.passwordWindowForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const password = document.getElementById('passwordInputField').value;

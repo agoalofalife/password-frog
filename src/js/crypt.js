@@ -1,5 +1,3 @@
-import sjcl from "./sjcl.js";
-
 function hashPassword(password) {
     // Initialize SJCL's random number generator
     sjcl.random.startCollectors();
@@ -17,6 +15,4 @@ function hashPassword(password) {
     return [hashedPasswordHex , saltHex ];
 }
 
-export {
-    hashPassword
-}
+window.hashPassword = hashPassword;
