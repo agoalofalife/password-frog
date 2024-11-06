@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "sjcl": "^1.0.8"
   }
 }
