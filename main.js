@@ -19,7 +19,6 @@ let tray = null; // Tray should be initialized properly
 
 // Disable hardware acceleration before app is ready
 app.disableHardwareAcceleration();
-let userPassword; // variable for save password
 
 // load env variables
 dotenv.config();
