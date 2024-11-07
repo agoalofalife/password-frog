@@ -110,18 +110,6 @@ const renderMainWindow = () => {
   ipcMain.handle('request-load-text', () => {
     return fs.readFileSync(filePath, "utf8");
   });
-
-  //Defines a handler for an asynchronous request sent from the renderer to the main process
-  ipcMain.handle('encrypt-text', (event, text) => {
-    const ENCRYPTED = sjcl.encrypt(userPassword, text);
-    const ECTRYPTED_FILE_PATH = path.join(userFilesDir, "encrypted_file.txt");
-    fs.writeFileSync(ECTRYPTED_FILE_PATH, ENCRYPTED, "utf8");
-    
-    dialog.showMessageBox(welcomeView, {
-        message: "File encrypted!",
-        type: "info"
-    });
-  });
 };
 
 const renderPasswordWindow = () => {

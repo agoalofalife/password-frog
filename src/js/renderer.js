@@ -7,8 +7,3 @@ document.getElementById("saveButton").addEventListener("click", (event) => {
 window.electronAPI.loadText().then(text => {
   document.getElementById("textToEncrypt").value = text;
 });
-//for interaction with button for encrypt
-document.getElementById("EncryptButton").addEventListener("click", () => {
-  const textToEncrypt = document.getElementById("textToEncrypt").value;
-  window.electronAPI.textEncrypt(textToEncrypt);
-});
