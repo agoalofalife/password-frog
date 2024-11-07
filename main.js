@@ -6,19 +6,32 @@ import fs from "fs";
 import sjcl from 'sjcl';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const userDataPath = app.getPath('userData');
+const passwordFilePath = path.join(userDataPath, 'master-password.json');
 
+console.log('User Data Path:', userDataPath);
+console.info('Password File Path:', passwordFilePath);
 
 let welcomeView; // variable for the welcome page
 let mainView; // variable for the main text edit page
+let passwordInputWindow;  // variable for the password input window
 let tray = null; // Tray should be initialized properly
+
+// Disable hardware acceleration before app is ready
+app.disableHardwareAcceleration();
 let userPassword; // variable for save password
 
 // load env variables
 dotenv.config();
 if (!process.env.USER_FILE_PATH) {
   console.error('Error: USER_FILE_PATH is not defined in the .env file.');
-  console.log('Please check your .env file and set the USER_FILE_PATH variable.');
+  console.warn('Please check your .env file and set the USER_FILE_PATH variable.');
   process.exit(1);
+}
+
+// function checks if master password exists
+function masterPasswordExists() {
+  return fs.existsSync(passwordFilePath);
 }
 
 const renderMainWindow = () => {
@@ -34,7 +47,7 @@ const renderMainWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "./src/js/preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
       zoomFactor: 1
@@ -48,7 +61,7 @@ const renderMainWindow = () => {
   }
 
   mainView.setMinimumSize(200, 200);
-  mainView.loadFile("index.html");
+  mainView.loadFile("./src/windows/main/index.html");
 
   // Handle close event for the main window
   mainView.on("close", (event) => {
@@ -60,20 +73,21 @@ const renderMainWindow = () => {
 
   (function createFileIfNotExists() {
     if (!fs.existsSync(userFilesDir)) {
-      fs.mkdirSync(userFilesDir);
+      // Ensures all directories in the path are created by recursion
+        fs.mkdirSync(userFilesDir, { recursive: true });
     }
 
     if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, "", "utf8");
+        fs.writeFileSync(filePath, "", "utf8");
 
-      console.log(`File created at: ${filePath}`);
+        console.info(`File created at: ${filePath}`);
 
-      //Add message with a greeting if the user has opened the application for the first time
-      dialog.showMessageBox(welcomeView, {
-        title: "Welcome to Frogg-app",
-        message: "File has been created.",
-        type: "info"
-      });
+        // Show message in the main window
+        dialog.showMessageBox(mainView, {
+            title: "Welcome to Frog-app",
+            message: "File has been created.",
+            type: "info"
+        });
     }
   })();
 
@@ -118,7 +132,7 @@ const renderPasswordWindow = () => {
     width: windowWidth,
     height: windowHeight,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "./src/js/preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -130,7 +144,7 @@ const renderPasswordWindow = () => {
     welcomeView.webContents.openDevTools();
   }
 
-  welcomeView.loadFile("passwordWindow.html");
+  welcomeView.loadFile("./src/windows/createMasterPassword/createMasterPassword.html");
 
   // Handle close event for the password window
   welcomeView.on("close", (event) => {
@@ -142,10 +156,14 @@ const renderPasswordWindow = () => {
 };
 
 app.whenReady().then(() => {
-  renderPasswordWindow();
+  if (masterPasswordExists()) {
+    renderPasswordInputWindow();
+  } else {
+      renderPasswordWindow();
+  }
 
   // Create Tray icon
-  const iconPath = path.join(__dirname, "icons", "frogIconTemplate.png");
+  const iconPath = path.join(__dirname, "./src/icons/frogIconTemplate.png");
   const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
 
   tray = new Tray(icon);
@@ -180,7 +198,13 @@ app.whenReady().then(() => {
   tray.setToolTip("Frog-app.");
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) renderPasswordWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+        if (masterPasswordExists()) {
+          renderPasswordInputWindow();
+        } else {
+            renderPasswordWindow();
+        }
+    }
   });
 });
 
@@ -190,12 +214,73 @@ app.on("window-all-closed", () => {
 });
 
 // IPC handling for the password submission
-ipcMain.on('password-submitted', (event, password) => {
-  console.log('Password received:', password);
-  userPassword = password; // saved password
-  if (welcomeView) {
-    welcomeView.close();
-    welcomeView = null;
+ipcMain.on('password-submitted', (event, data) => {
+  console.info('Password data received:', data);
+
+  try {
+      // Store the hashed password and salt
+      fs.writeFileSync(passwordFilePath, JSON.stringify(data));
+
+      if (welcomeView) {
+          welcomeView.close();
+          welcomeView = null;
+      }
+      renderMainWindow();
+  } catch (error) {
+      console.error('Error saving master password:', error);
   }
-  renderMainWindow();
 });
+
+
+ipcMain.on('verify-master-password', (event, enteredPassword) => {
+  try {
+      const data = JSON.parse(fs.readFileSync(passwordFilePath));
+      const { hashedPassword, salt } = data;
+      const iterations = 10000;
+
+      // Hash the entered password with the stored salt
+      const enteredHashedPasswordBits = sjcl.misc.pbkdf2(enteredPassword, sjcl.codec.hex.toBits(salt), iterations, 256);
+      const enteredHashedPasswordHex = sjcl.codec.hex.fromBits(enteredHashedPasswordBits);
+
+      if (enteredHashedPasswordHex === hashedPassword) {
+          if (passwordInputWindow) {
+              passwordInputWindow.close();
+              passwordInputWindow = null;
+          }
+          renderMainWindow();
+      } else {
+          event.reply('password-incorrect');
+      }
+  } catch (error) {
+      console.error('Error verifying master password:', error);
+  }
+});
+
+
+function renderPasswordInputWindow() {
+  passwordInputWindow = new BrowserWindow({
+      width: 600,
+      height: 600,
+      webPreferences: {
+          preload: path.join(__dirname, "./src/js/preload.js"),
+          nodeIntegration: false,
+          contextIsolation: true,
+      },
+      resizable: false,
+      fullscreenable: false,
+  });
+
+  if (process.env.APP_ENV === "local") {
+    passwordInputWindow.webContents.openDevTools();
+  }
+
+  passwordInputWindow.loadFile("./src/windows/password-input/passwordInput.html");
+
+  // Handle close event for the password input window
+  passwordInputWindow.on("close", (event) => {
+      if (!app.isQuitting) {
+          event.preventDefault();
+          passwordInputWindow.hide(); // Hide the window instead of closing
+      }
+  });
+}

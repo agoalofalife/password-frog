@@ -62,7 +62,7 @@ html, body {
     height: 100vh; /* Full viewport height */
     background-color: #333C45;
     background-position: top;
-    background-image: url('logo.webp');
+    background-image: url('../img/logo.webp');
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -90,4 +90,22 @@ html, body {
 
 .form-check{
     color: white;
+}
+
+.passwordInputForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    width: 100%; /* Ensure the form takes full width */
+}
+
+.passwordInputField{
+    padding-top: 10%;
+}
+
+.passwordInputBtn{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    padding-bottom: 5%;
 }
