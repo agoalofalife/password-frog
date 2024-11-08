@@ -89,21 +89,6 @@ const renderMainWindow = () => {
         });
     }
   })();
-
-  try {  ipcMain.on('save-text', (event, text) => {
-    fs.writeFile(filePath, text, () => {
-      dialog.showMessageBox(welcomeView, {
-        message: "File has been saved.",
-        type: "info"
-      });
-    });
-  });
-  } catch(err) {
-    dialog.showMessageBox(welcomeView, {
-      message: err.message,
-      type: "info"
-    });
-  }
   
   //read file and show it in app
   ipcMain.handle('request-load-text', () => {
@@ -114,29 +99,42 @@ const renderMainWindow = () => {
     return JSON.parse(fs.readFileSync(passwordFilePath, 'utf-8'));
   }
   
-  ipcMain.handle('encrypt-text', (event, { text }) => {
+  ipcMain.on('save-and-encrypt-text', async (event, text) => {
+    const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
+    const filePath = path.resolve(process.env.USER_FILE_PATH);
+    const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
+  
     try {
-        const passwordData = getMasterPassword();
-        const { hashedPassword } = passwordData;
-        const encryptedText = sjcl.encrypt(hashedPassword, text);
-        const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
-
-        fs.writeFileSync(encryptedFilePath, encryptedText, 'utf8');
-
-        dialog.showMessageBox({
-            type: 'info',
-            title: 'Encryption Successful',
-            message: 'The text has been successfully encrypted.'
-        });
+      // 1. Сначала сохраняем текст в основной файл
+      fs.writeFileSync(filePath, text, 'utf8');
+      console.info(`File saved at: ${filePath}`);
+  
+      // 2. Читаем мастер-пароль для шифрования
+      const passwordData = getMasterPassword();
+      const { hashedPassword } = passwordData;
+  
+      // 3. Шифруем текст с использованием пароля
+      const encryptedText = sjcl.encrypt(hashedPassword, text);
+  
+      // 4. Сохраняем зашифрованный текст в новый файл
+      fs.writeFileSync(encryptedFilePath, encryptedText, 'utf8');
+      console.info(`Encrypted file saved at: ${encryptedFilePath}`);
+  
+      // 5. Показываем уведомление об успешной операции
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Save and Encrypt Successful',
+        message: 'The text has been saved and encrypted successfully!'
+      });
     } catch (error) {
-        console.error('Encryption error:', error);
-        dialog.showMessageBox({
-            type: 'error',
-            title: 'Encryption Failed',
-            message: 'There was an error encrypting the text.'
-        });
+      console.error('Error during save and encryption:', error);
+      dialog.showMessageBox({
+        type: 'error',
+        title: 'Error',
+        message: 'There was an error saving or encrypting the text.'
+      });
     }
-});
+  });
 
 };
 
