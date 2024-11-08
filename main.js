@@ -105,22 +105,17 @@ const renderMainWindow = () => {
     const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
   
     try {
-      // 1. Сначала сохраняем текст в основной файл
       fs.writeFileSync(filePath, text, 'utf8');
       console.info(`File saved at: ${filePath}`);
   
-      // 2. Читаем мастер-пароль для шифрования
       const passwordData = getMasterPassword();
       const { hashedPassword } = passwordData;
   
-      // 3. Шифруем текст с использованием пароля
       const encryptedText = sjcl.encrypt(hashedPassword, text);
   
-      // 4. Сохраняем зашифрованный текст в новый файл
       fs.writeFileSync(encryptedFilePath, encryptedText, 'utf8');
       console.info(`Encrypted file saved at: ${encryptedFilePath}`);
   
-      // 5. Показываем уведомление об успешной операции
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
