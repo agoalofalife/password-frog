@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     sendText: (text) => ipcRenderer.send('save-text', text),
     //create function for send an asynchronous request to main.js
     loadText: () => ipcRenderer.invoke('request-load-text'),
+    encryptText: (text) => ipcRenderer.invoke('encrypt-text', text),
 });

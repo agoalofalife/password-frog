@@ -109,6 +109,35 @@ const renderMainWindow = () => {
   ipcMain.handle('request-load-text', () => {
     return fs.readFileSync(filePath, "utf8");
   });
+
+  function getMasterPassword() {
+    return JSON.parse(fs.readFileSync(passwordFilePath, 'utf-8'));
+  }
+  
+  ipcMain.handle('encrypt-text', (event, { text }) => {
+    try {
+        const passwordData = getMasterPassword();
+        const { hashedPassword } = passwordData;
+        const encryptedText = sjcl.encrypt(hashedPassword, text);
+        const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
+
+        fs.writeFileSync(encryptedFilePath, encryptedText, 'utf8');
+
+        dialog.showMessageBox({
+            type: 'info',
+            title: 'Encryption Successful',
+            message: 'The text has been successfully encrypted.'
+        });
+    } catch (error) {
+        console.error('Encryption error:', error);
+        dialog.showMessageBox({
+            type: 'error',
+            title: 'Encryption Failed',
+            message: 'There was an error encrypting the text.'
+        });
+    }
+});
+
 };
 
 const renderPasswordWindow = () => {
