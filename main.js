@@ -8,6 +8,7 @@ import sjcl from 'sjcl';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
 const passwordFilePath = path.join(userDataPath, 'master-password.json');
+const ENCODING = 'utf8';
 
 console.log('User Data Path:', userDataPath);
 console.info('Password File Path:', passwordFilePath);
@@ -77,7 +78,7 @@ const renderMainWindow = () => {
     }
 
     if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, "", "utf8");
+        fs.writeFileSync(filePath, "", ENCODING);
 
         console.info(`File created at: ${filePath}`);
 
@@ -90,39 +91,45 @@ const renderMainWindow = () => {
     }
   })();
   
-  //read file and show it in app
-  ipcMain.handle('request-load-text', () => {
-    return fs.readFileSync(filePath, "utf8");
-  });
+  function getDatаNow() {
+    const DATE_NOW = new Date();
+    
+    const YEAR_NOW = DATE_NOW.getFullYear();
+    const MONTH_NOW = String(DATE_NOW.getMonth() + 1).padStart(2, '0');
+    const DAY_NOW = String(DATE_NOW.getDate()).padStart(2, '0');
+    const HOURS_NOW = String(DATE_NOW.getHours()).padStart(2, '0');
+    const MINUTES_NOW = String(DATE_NOW.getMinutes()).padStart(2, '0');
+    const SECONDS_NOW = String(DATE_NOW.getSeconds()).padStart(2, '0');
+    
+    return `${YEAR_NOW}-${MONTH_NOW}-${DAY_NOW} ${HOURS_NOW}:${MINUTES_NOW}:${SECONDS_NOW}`;
+  }
 
   function getMasterPassword() {
-    return JSON.parse(fs.readFileSync(passwordFilePath, 'utf-8'));
+    return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   }
   
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
     const filePath = path.resolve(process.env.USER_FILE_PATH);
     const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
-  
+    const DATE_ENCRYPT = getDatаNow();
+
     try {
-      fs.writeFileSync(filePath, text, 'utf8');
-      console.info(`File saved at: ${filePath}`);
-  
       const passwordData = getMasterPassword();
       const { hashedPassword } = passwordData;
   
       const encryptedText = sjcl.encrypt(hashedPassword, text);
   
-      fs.writeFileSync(encryptedFilePath, encryptedText, 'utf8');
-      console.info(`Encrypted file saved at: ${encryptedFilePath}`);
+      fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
+      console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${DATE_ENCRYPT}`);
   
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
-        message: 'The text has been saved and encrypted successfully!'
+        message: `The text has been saved and encrypted at ${DATE_ENCRYPT}`
       });
     } catch (error) {
-      console.error('Error during save and encryption:', error);
+      console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${DATE_ENCRYPT}`);
       dialog.showMessageBox({
         type: 'error',
         title: 'Error',
@@ -283,7 +290,7 @@ function renderPasswordInputWindow() {
     passwordInputWindow.webContents.openDevTools();
   }
 
-  passwordInputWindow.loadFile("./src/windows/password-input/passwordInput.html");
+  passwordInputWindow.loadFile("./src/windows/passwordInput/passwordInput.html");
 
   // Handle close event for the password input window
   passwordInputWindow.on("close", (event) => {
