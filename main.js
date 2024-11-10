@@ -91,7 +91,7 @@ const renderMainWindow = () => {
     }
   })();
   
-  function getDatаNow() {
+  function getCurrentDatetime() {
     const DATE_NOW = new Date();
     
     const YEAR_NOW = DATE_NOW.getFullYear();
@@ -112,7 +112,7 @@ const renderMainWindow = () => {
     const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
     const filePath = path.resolve(process.env.USER_FILE_PATH);
     const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
-    const DATE_ENCRYPT = getDatаNow();
+    const DATE_ENCRYPT = getCurrentDatetime();
 
     try {
       const passwordData = getMasterPassword();
