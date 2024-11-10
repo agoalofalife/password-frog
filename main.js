@@ -110,7 +110,6 @@ const renderMainWindow = () => {
   
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
-    const filePath = path.resolve(process.env.USER_FILE_PATH);
     const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
     const DATE_ENCRYPT = getCurrentDatetime();
 
