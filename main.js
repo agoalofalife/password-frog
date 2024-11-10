@@ -4,6 +4,7 @@ import path, { dirname } from "path";
 import dotenv from "dotenv";
 import fs from "fs";
 import sjcl from 'sjcl';
+import moment from "moment";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
@@ -92,16 +93,7 @@ const renderMainWindow = () => {
   })();
   
   function getCurrentDatetime() {
-    const DATE_NOW = new Date();
-    
-    const YEAR_NOW = DATE_NOW.getFullYear();
-    const MONTH_NOW = String(DATE_NOW.getMonth() + 1).padStart(2, '0');
-    const DAY_NOW = String(DATE_NOW.getDate()).padStart(2, '0');
-    const HOURS_NOW = String(DATE_NOW.getHours()).padStart(2, '0');
-    const MINUTES_NOW = String(DATE_NOW.getMinutes()).padStart(2, '0');
-    const SECONDS_NOW = String(DATE_NOW.getSeconds()).padStart(2, '0');
-    
-    return `${YEAR_NOW}-${MONTH_NOW}-${DAY_NOW} ${HOURS_NOW}:${MINUTES_NOW}:${SECONDS_NOW}`;
+    return moment().format('MMMM Do YYYY, h:mm:ss a');;
   }
 
   function getMasterPassword() {
@@ -125,7 +117,7 @@ const renderMainWindow = () => {
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
-        message: `The text has been saved and encrypted at ${DATE_ENCRYPT}`
+        message: `The text has been saved and encrypted!`
       });
     } catch (error) {
       console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${DATE_ENCRYPT}`);
