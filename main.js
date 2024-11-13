@@ -91,15 +91,15 @@ const renderMainWindow = () => {
         });
     }
   })();
-  
+
   function getCurrentDatetime() {
-    return moment().format('MMMM Do YYYY, h:mm:ss a');;
+    return moment();
   }
 
   function getMasterPassword() {
     return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   }
-  
+
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
     const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
@@ -108,12 +108,12 @@ const renderMainWindow = () => {
     try {
       const passwordData = getMasterPassword();
       const { hashedPassword } = passwordData;
-  
+
       const encryptedText = sjcl.encrypt(hashedPassword, text);
-  
+
       fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
       console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${DATE_ENCRYPT}`);
-  
+
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
