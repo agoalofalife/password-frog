@@ -43,8 +43,10 @@ const renderMainWindow = () => {
   // Path for dir with txt file
   const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
   const filePath = path.resolve(process.env.USER_FILE_PATH);
-  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env pls
-
+  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env 
+  const PASSWORD_DATA = getMasterPassword();
+  const { hashedPassword } = PASSWORD_DATA;
+  const GET_DATE = getCurrentDatetime();
 
   mainView = new BrowserWindow({
     width: windowWidth,
@@ -102,22 +104,47 @@ const renderMainWindow = () => {
     return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   }
   
-  ipcMain.on('save-and-encrypt-text', async (event, text) => {
-    const DATE_ENCRYPT = getCurrentDatetime();
-
+  //add function for encrypt and unencrypt file for code's flexibility 
+  function encryptOrDecryptText(password, text, isEncrypting) {
     try {
-      const passwordData = getMasterPassword();
-      const { hashedPassword } = passwordData;
+      if (isEncrypting) {
+        return sjcl.encrypt(password, text);
+      } else {
+        return sjcl.decrypt(password, text);
+      }
+    } catch (error) {
+      console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
+      app.isQuitting = true; 
+      app.quit(); 
+    }
+  }
+
+  ipcMain.handle('request-load-text', async () => {
+    try {
+      if (fs.existsSync(encryptedFilePath)) {
+        const ENCRYPTED_TEXT_READ = fs.readFileSync(encryptedFilePath, ENCODING);
+        return encryptOrDecryptText(hashedPassword, ENCRYPTED_TEXT_READ, false); // return unencrypted text
+      }
+      return '';
+    } catch (error) {
+      console.error(`Error decryption: ${error} at ${GET_DATE}`);
+      app.isQuitting = true; 
+      app.quit(); 
+    }
+  });
+
+
+  ipcMain.on('save-and-encrypt-text', async (event, text) => {
+    try {
+      const ENCRYPTED_TEXT_CREATE = encryptOrDecryptText(hashedPassword, text, true);
   
-      const encryptedText = sjcl.encrypt(hashedPassword, text);
-  
-      fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
-      console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${DATE_ENCRYPT}`);
+      fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT_CREATE, ENCODING);
+      console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${GET_DATE}`);
       
       // Delete unencrypt file if it's
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath); 
-        console.info(`Unencrypted file has been deleted: ${filePath}`);
+        console.info(`Unencrypted file has been deleted: ${filePath}\nDate: ${GET_DATE}`);
       }
 
       dialog.showMessageBox({
@@ -126,7 +153,7 @@ const renderMainWindow = () => {
         message: `The text has been saved and encrypted!`
       });
     } catch (error) {
-      console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${DATE_ENCRYPT}`);
+      console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${GET_DATE}`);
       dialog.showMessageBox({
         type: 'error',
         title: 'Error',
@@ -134,7 +161,6 @@ const renderMainWindow = () => {
       });
     }
   });
-
 };
 
 const renderPasswordWindow = () => {
