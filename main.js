@@ -43,6 +43,8 @@ const renderMainWindow = () => {
   // Path for dir with txt file
   const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
   const filePath = path.resolve(process.env.USER_FILE_PATH);
+  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env pls
+
 
   mainView = new BrowserWindow({
     width: windowWidth,
@@ -73,12 +75,12 @@ const renderMainWindow = () => {
   });
 
   (function createFileIfNotExists() {
-    if (!fs.existsSync(userFilesDir)) {
+    if (!fs.existsSync(encryptedFilePath) && !fs.existsSync(filePath)) {
       // Ensures all directories in the path are created by recursion
         fs.mkdirSync(userFilesDir, { recursive: true });
     }
 
-    if (!fs.existsSync(filePath)) {
+    if (!fs.existsSync(encryptedFilePath) && !fs.existsSync(filePath)) {
         fs.writeFileSync(filePath, "", ENCODING);
 
         console.info(`File created at: ${filePath}`);
@@ -101,8 +103,6 @@ const renderMainWindow = () => {
   }
   
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
-    const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
-    const encryptedFilePath = path.join(userFilesDir, 'encrypted.txt');
     const DATE_ENCRYPT = getCurrentDatetime();
 
     try {
@@ -113,7 +113,13 @@ const renderMainWindow = () => {
   
       fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
       console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${DATE_ENCRYPT}`);
-  
+      
+      // Delete unencrypt file if it's
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath); 
+        console.info(`Unencrypted file has been deleted: ${filePath}`);
+      }
+
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
