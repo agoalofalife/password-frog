@@ -95,9 +95,9 @@ const renderMainWindow = () => {
         });
     }
   })();
-  
+
   function getCurrentDatetime() {
-    return moment().format('MMMM Do YYYY, h:mm:ss a');;
+    return moment();
   }
 
   function getMasterPassword() {
@@ -146,7 +146,6 @@ const renderMainWindow = () => {
         fs.unlinkSync(filePath); 
         console.info(`Unencrypted file has been deleted: ${filePath}\nDate: ${GET_DATE}`);
       }
-
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
@@ -270,7 +269,6 @@ ipcMain.on('password-submitted', (event, data) => {
   }
 });
 
-
 ipcMain.on('verify-master-password', (event, enteredPassword) => {
   try {
       const data = JSON.parse(fs.readFileSync(passwordFilePath));
@@ -294,7 +292,6 @@ ipcMain.on('verify-master-password', (event, enteredPassword) => {
       console.error('Error verifying master password:', error);
   }
 });
-
 
 function renderPasswordInputWindow() {
   passwordInputWindow = new BrowserWindow({
