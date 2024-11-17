@@ -28,6 +28,10 @@ if (!process.env.USER_FILE_PATH) {
   console.error('Error: USER_FILE_PATH is not defined in the .env file.');
   console.warn('Please check your .env file and set the USER_FILE_PATH variable.');
   process.exit(1);
+} else if (!process.env.USER_ENCRYPTED_FILE_PATH) {
+  console.error('Error: USER_ENCRYPTED_FILE_PATH is not defined in the .env file.');
+  console.warn('Please check your .env file and set the USER_ENCRYPTED_FILE_PATH variable.');
+  process.exit(1);
 }
 
 // function checks if master password exists
@@ -141,11 +145,6 @@ const renderMainWindow = () => {
       fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT_CREATE, ENCODING);
       console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${GET_DATE}`);
       
-      // Delete unencrypt file if it's
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath); 
-        console.info(`Unencrypted file has been deleted: ${filePath}\nDate: ${GET_DATE}`);
-      }
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
