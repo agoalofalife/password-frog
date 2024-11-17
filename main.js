@@ -24,11 +24,7 @@ app.disableHardwareAcceleration();
 
 // load env variables
 dotenv.config();
-if (!process.env.USER_FILE_PATH) {
-  console.error('Error: USER_FILE_PATH is not defined in the .env file.');
-  console.warn('Please check your .env file and set the USER_FILE_PATH variable.');
-  process.exit(1);
-} else if (!process.env.USER_ENCRYPTED_FILE_PATH) {
+if (!process.env.USER_ENCRYPTED_FILE_PATH) {
   console.error('Error: USER_ENCRYPTED_FILE_PATH is not defined in the .env file.');
   console.warn('Please check your .env file and set the USER_ENCRYPTED_FILE_PATH variable.');
   process.exit(1);
@@ -44,9 +40,6 @@ const renderMainWindow = () => {
 
   const windowWidth = Math.floor(width * 0.8); // 80% of screen width
   const windowHeight = Math.floor(height * 0.8); // 80% of screen height
-  // Path for dir with txt file
-  const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
-  const filePath = path.resolve(process.env.USER_FILE_PATH);
   const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env 
   const PASSWORD_DATA = getMasterPassword();
   const { hashedPassword } = PASSWORD_DATA;
@@ -79,26 +72,6 @@ const renderMainWindow = () => {
       mainView.hide(); // Hide the main window instead of closing
     }
   });
-
-  (function createFileIfNotExists() {
-    if (!fs.existsSync(encryptedFilePath) && !fs.existsSync(filePath)) {
-      // Ensures all directories in the path are created by recursion
-        fs.mkdirSync(userFilesDir, { recursive: true });
-    }
-
-    if (!fs.existsSync(encryptedFilePath) && !fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, "", ENCODING);
-
-        console.info(`File created at: ${filePath}`);
-
-        // Show message in the main window
-        dialog.showMessageBox(mainView, {
-            title: "Welcome to Frog-app",
-            message: "File has been created.",
-            type: "info"
-        });
-    }
-  })();
 
   function getCurrentDatetime() {
     return moment();
@@ -140,11 +113,11 @@ const renderMainWindow = () => {
 
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     try {
-      const ENCRYPTED_TEXT_CREATE = encryptOrDecryptText(hashedPassword, text, true);
+      const ENCRYPTED_TEXT = encryptOrDecryptText(hashedPassword, text, true);
+
+      fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT, ENCODING);
+      console.info(`Encrypted text has been saved to ${encryptedFilePath}\nDate: ${GET_DATE}`);
   
-      fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT_CREATE, ENCODING);
-      console.info(`Encrypted file has been saved to ${encryptedFilePath} at ${GET_DATE}`);
-      
       dialog.showMessageBox({
         type: 'info',
         title: 'Save and Encrypt Successful',
