@@ -4,10 +4,12 @@ import path, { dirname } from "path";
 import dotenv from "dotenv";
 import fs from "fs";
 import sjcl from 'sjcl';
+import moment from "moment";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
 const passwordFilePath = path.join(userDataPath, 'master-password.json');
+const ENCODING = 'utf8';
 
 console.log('User Data Path:', userDataPath);
 console.info('Password File Path:', passwordFilePath);
@@ -22,9 +24,9 @@ app.disableHardwareAcceleration();
 
 // load env variables
 dotenv.config();
-if (!process.env.USER_FILE_PATH) {
-  console.error('Error: USER_FILE_PATH is not defined in the .env file.');
-  console.warn('Please check your .env file and set the USER_FILE_PATH variable.');
+if (!process.env.USER_ENCRYPTED_FILE_PATH) {
+  console.error('Error: USER_ENCRYPTED_FILE_PATH is not defined in the .env file.');
+  console.warn('Please check your .env file and set the USER_ENCRYPTED_FILE_PATH variable.');
   process.exit(1);
 }
 
@@ -38,6 +40,10 @@ const renderMainWindow = () => {
 
   const windowWidth = Math.floor(width * 0.8); // 80% of screen width
   const windowHeight = Math.floor(height * 0.8); // 80% of screen height
+  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env 
+  const PASSWORD_DATA = getMasterPassword();
+  const { hashedPassword } = PASSWORD_DATA;
+  const GET_DATE = getCurrentDatetime();
 
   mainView = new BrowserWindow({
     width: windowWidth,
@@ -67,29 +73,65 @@ const renderMainWindow = () => {
     }
   });
 
-  // Path for dir with txt file
-  const userFilesDir = path.dirname(process.env.USER_FILE_PATH);
-  const filePath = path.resolve(process.env.USER_FILE_PATH);
+  function getCurrentDatetime() {
+    return moment();
+  }
 
-  (function createFileIfNotExists() {
-    if (!fs.existsSync(userFilesDir)) {
-      // Ensures all directories in the path are created by recursion
-        fs.mkdirSync(userFilesDir, { recursive: true });
+  function getMasterPassword() {
+    return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
+  }
+  
+  //add function for encrypt and unencrypt file for code's flexibility 
+  function encryptOrDecryptText(password, text, isEncrypting) {
+    try {
+      if (isEncrypting) {
+        return sjcl.encrypt(password, text);
+      } else {
+        return sjcl.decrypt(password, text);
+      }
+    } catch (error) {
+      console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
+      app.isQuitting = true; 
+      app.quit(); 
     }
+  }
 
-    if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, "", "utf8");
-
-        console.info(`File created at: ${filePath}`);
-
-        // Show message in the main window
-        dialog.showMessageBox(mainView, {
-            title: "Welcome to Frog-app",
-            message: "File has been created.",
-            type: "info"
-        });
+  ipcMain.handle('request-load-text', async () => {
+    try {
+      if (fs.existsSync(encryptedFilePath)) {
+        const ENCRYPTED_TEXT_READ = fs.readFileSync(encryptedFilePath, ENCODING);
+        return encryptOrDecryptText(hashedPassword, ENCRYPTED_TEXT_READ, false); // return unencrypted text
+      }
+      return '';
+    } catch (error) {
+      console.error(`Error decryption: ${error} at ${GET_DATE}`);
+      app.isQuitting = true; 
+      app.quit(); 
     }
-  })();
+  });
+
+
+  ipcMain.on('save-and-encrypt-text', async (event, text) => {
+    try {
+      const ENCRYPTED_TEXT = encryptOrDecryptText(hashedPassword, text, true);
+
+      fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT, ENCODING);
+      console.info(`Encrypted text has been saved to ${encryptedFilePath}\nDate: ${GET_DATE}`);
+  
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Save and Encrypt Successful',
+        message: `The text has been saved and encrypted!`
+      });
+    } catch (error) {
+      console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${GET_DATE}`);
+      dialog.showMessageBox({
+        type: 'error',
+        title: 'Error',
+        message: 'There was an error saving or encrypting the text.'
+      });
+    }
+  });
 };
 
 const renderPasswordWindow = () => {
@@ -199,7 +241,6 @@ ipcMain.on('password-submitted', (event, data) => {
   }
 });
 
-
 ipcMain.on('verify-master-password', (event, enteredPassword) => {
   try {
       const data = JSON.parse(fs.readFileSync(passwordFilePath));
@@ -224,7 +265,6 @@ ipcMain.on('verify-master-password', (event, enteredPassword) => {
   }
 });
 
-
 function renderPasswordInputWindow() {
   passwordInputWindow = new BrowserWindow({
       width: 600,
@@ -242,7 +282,7 @@ function renderPasswordInputWindow() {
     passwordInputWindow.webContents.openDevTools();
   }
 
-  passwordInputWindow.loadFile("./src/windows/password-input/passwordInput.html");
+  passwordInputWindow.loadFile("./src/windows/passwordInput/passwordInput.html");
 
   // Handle close event for the password input window
   passwordInputWindow.on("close", (event) => {
