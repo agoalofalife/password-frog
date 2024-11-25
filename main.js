@@ -1,10 +1,11 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain, dialog, systemPreferences } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
 import fs from "fs";
-import sjcl from 'sjcl';
+import sjcl from "sjcl";
 import moment from "moment";
+import keytar from "keytar";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
@@ -33,6 +34,43 @@ if (!process.env.USER_ENCRYPTED_FILE_PATH) {
 // function checks if master password exists
 function masterPasswordExists() {
   return fs.existsSync(passwordFilePath);
+}
+
+async function authenticateWithTouchID() {
+  if(process.platform === "darwin" && systemPreferences.canPromptTouchID()){
+    const result = await systemPreferences.askForTouchID("Please put your finger on it for authentication")
+    
+    if(result) {
+      console.log("Authentication via TouchID was successful!");
+
+      const password = await keytar.getPassword("Password-Frog", "macos-password");
+
+      if(password) {
+        console.log("The password from the Keychain has been found");
+        return password;
+      } else {
+        console.log("The password not found")
+      }
+    } else {
+      console.log("Authentication via Touch ID failed")
+      return null;
+    }
+  } else {
+    console.log("TouchID is not available on this platform");
+  }
+}
+
+async function loadPasswordAndVerify() {
+  const password = await authenticateWithTouchID();
+
+  if (password) {
+    console.log('Используем пароль для входа в приложение:', password);
+
+    // Pass the password to the main process for further verification
+    ipcMain.emit('verify-master-password', password);
+  } else {
+    console.log('Не удалось получить пароль через Touch ID');
+  }
 }
 
 const renderMainWindow = () => {
@@ -113,6 +151,15 @@ const renderMainWindow = () => {
 
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     try {
+      const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
+      const userFilesDir = path.dirname(encryptedFilePath); // Папка, в которой должен быть файл
+
+      // Check directory and create it if it not 
+      if (!fs.existsSync(userFilesDir)) {
+          fs.mkdirSync(userFilesDir, { recursive: true }); // Параметр { recursive: true } создаст все промежуточные каталоги
+          console.info(`Directory created at: ${userFilesDir}`);
+      }
+
       const ENCRYPTED_TEXT = encryptOrDecryptText(hashedPassword, text, true);
 
       fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT, ENCODING);
@@ -168,6 +215,7 @@ const renderPasswordWindow = () => {
 app.whenReady().then(() => {
   if (masterPasswordExists()) {
     renderPasswordInputWindow();
+    loadPasswordAndVerify();
   } else {
       renderPasswordWindow();
   }
