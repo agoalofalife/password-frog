@@ -6,6 +6,7 @@ import fs from "fs";
 import sjcl from "sjcl";
 import moment from "moment";
 import keytar from "keytar";
+import notifier from "node-notifier";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
@@ -164,12 +165,14 @@ const renderMainWindow = () => {
 
       fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT, ENCODING);
       console.info(`Encrypted text has been saved to ${encryptedFilePath}\nDate: ${GET_DATE}`);
-  
-      dialog.showMessageBox({
-        type: 'info',
-        title: 'Save and Encrypt Successful',
-        message: `The text has been saved and encrypted!`
-      });
+
+      notifier.notify({
+        title: 'Save and Encrypt Successfulу!',
+        message: 'The text has been saved and encrypted',
+        sound: true,
+        wait: true
+      })
+
     } catch (error) {
       console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${GET_DATE}`);
       dialog.showMessageBox({
