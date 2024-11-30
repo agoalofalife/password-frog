@@ -38,12 +38,10 @@ function masterPasswordExists() {
 }
 
 async function authenticateWithTouchID() {
-  if(process.platform === "darwin" && systemPreferences.canPromptTouchID()){
-    const result = await systemPreferences.askForTouchID("Please put your finger on it for authentication")
-    
-    if(result) {
-      console.log("Authentication via TouchID was successful!");
 
+  if(process.platform === "darwin" && systemPreferences.canPromptTouchID()){
+    systemPreferences.promptTouchID('Please put your finger on it for authentication"').then(async success => {
+      console.log("Authentication via TouchID was successful!");
       const password = await keytar.getPassword("Password-Frog", "macos-password");
 
       if(password) {
@@ -52,10 +50,10 @@ async function authenticateWithTouchID() {
       } else {
         console.log("The password not found")
       }
-    } else {
+    }).catch(err => {
       console.log("Authentication via Touch ID failed")
-      return null;
-    }
+      console.log(err)
+    })
   } else {
     console.log("TouchID is not available on this platform");
   }
@@ -79,7 +77,7 @@ const renderMainWindow = () => {
 
   const windowWidth = Math.floor(width * 0.8); // 80% of screen width
   const windowHeight = Math.floor(height * 0.8); // 80% of screen height
-  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env 
+  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env
   const PASSWORD_DATA = getMasterPassword();
   const { hashedPassword } = PASSWORD_DATA;
   const GET_DATE = getCurrentDatetime();
@@ -119,8 +117,8 @@ const renderMainWindow = () => {
   function getMasterPassword() {
     return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   }
-  
-  //add function for encrypt and unencrypt file for code's flexibility 
+
+  //add function for encrypt and unencrypt file for code's flexibility
   function encryptOrDecryptText(password, text, isEncrypting) {
     try {
       if (isEncrypting) {
@@ -130,8 +128,8 @@ const renderMainWindow = () => {
       }
     } catch (error) {
       console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
-      app.isQuitting = true; 
-      app.quit(); 
+      app.isQuitting = true;
+      app.quit();
     }
   }
 
@@ -144,8 +142,8 @@ const renderMainWindow = () => {
       return '';
     } catch (error) {
       console.error(`Error decryption: ${error} at ${GET_DATE}`);
-      app.isQuitting = true; 
-      app.quit(); 
+      app.isQuitting = true;
+      app.quit();
     }
   });
 
@@ -155,7 +153,7 @@ const renderMainWindow = () => {
       const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
       const userFilesDir = path.dirname(encryptedFilePath); // Папка, в которой должен быть файл
 
-      // Check directory and create it if it not 
+      // Check directory and create it if it not
       if (!fs.existsSync(userFilesDir)) {
           fs.mkdirSync(userFilesDir, { recursive: true }); // Параметр { recursive: true } создаст все промежуточные каталоги
           console.info(`Directory created at: ${userFilesDir}`);
