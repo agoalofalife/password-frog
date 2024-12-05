@@ -6,6 +6,11 @@ document.getElementById('passwordInputForm').addEventListener('submit', (e) => {
     window.electronAPI.verifyPassword(enteredPassword);
 });
 
+window.electronAPI.onFillPasswordField((password) => {
+    document.getElementById('passwordInputField').value = password;
+    document.getElementById('passwordInputForm').submit();
+});
+
 // Handle incorrect password feedback
 window.electronAPI.onPasswordIncorrect(() => {
     alert('Incorrect password. Please try again.');

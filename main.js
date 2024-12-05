@@ -1,10 +1,13 @@
-import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, screen, Tray, Menu, nativeImage, ipcMain, dialog, systemPreferences } from "electron";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import dotenv from "dotenv";
 import fs from "fs";
-import sjcl from 'sjcl';
+import sjcl from "sjcl";
 import moment from "moment";
+import keytar from "keytar";
+import notifier from "node-notifier";
+import os from "os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
@@ -35,12 +38,46 @@ function masterPasswordExists() {
   return fs.existsSync(passwordFilePath);
 }
 
+async function authenticateWithTouchID() {
+  if (process.platform === "darwin") {
+      try {
+          await systemPreferences.promptTouchID('Please put your finger on it for authentication');
+          console.log("Authentication via TouchID was successful!");
+
+          const passwordData = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
+          const password = passwordData.hashedPassword; 
+
+          if (password) {
+              return password;
+          } else {
+              console.log("Password not found");
+              return null;
+          }
+      } catch (err) {
+          console.error("Authentication via Touch ID failed:", err);
+      }
+  } else {
+      console.log("TouchID is not available on this platform");
+  }
+}
+
+async function loadPasswordAndVerify() {
+  const password = await authenticateWithTouchID();
+
+  if (password) {
+      console.log('Using password for login:', password);
+      mainView.webContents.send('fill-password-field', password);
+  } else {
+      console.log('Failed to retrieve password using Touch ID');
+  }
+}
+
 const renderMainWindow = () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   const windowWidth = Math.floor(width * 0.8); // 80% of screen width
   const windowHeight = Math.floor(height * 0.8); // 80% of screen height
-  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env 
+  const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  // path for Encrypted file, check .env
   const PASSWORD_DATA = getMasterPassword();
   const { hashedPassword } = PASSWORD_DATA;
   const GET_DATE = getCurrentDatetime();
@@ -80,8 +117,8 @@ const renderMainWindow = () => {
   function getMasterPassword() {
     return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   }
-  
-  //add function for encrypt and unencrypt file for code's flexibility 
+
+  //add function for encrypt and unencrypt file for code's flexibility
   function encryptOrDecryptText(password, text, isEncrypting) {
     try {
       if (isEncrypting) {
@@ -91,8 +128,8 @@ const renderMainWindow = () => {
       }
     } catch (error) {
       console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
-      app.isQuitting = true; 
-      app.quit(); 
+      app.isQuitting = true;
+      app.quit();
     }
   }
 
@@ -105,24 +142,35 @@ const renderMainWindow = () => {
       return '';
     } catch (error) {
       console.error(`Error decryption: ${error} at ${GET_DATE}`);
-      app.isQuitting = true; 
-      app.quit(); 
+      app.isQuitting = true;
+      app.quit();
     }
   });
 
 
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     try {
+      const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
+      const userFilesDir = path.dirname(encryptedFilePath); 
+
+      // Check directory and create it if it not
+      if (!fs.existsSync(userFilesDir)) {
+          fs.mkdirSync(userFilesDir, { recursive: true }); 
+          console.info(`Directory created at: ${userFilesDir}`);
+      }
+
       const ENCRYPTED_TEXT = encryptOrDecryptText(hashedPassword, text, true);
 
       fs.writeFileSync(encryptedFilePath, ENCRYPTED_TEXT, ENCODING);
       console.info(`Encrypted text has been saved to ${encryptedFilePath}\nDate: ${GET_DATE}`);
-  
-      dialog.showMessageBox({
-        type: 'info',
-        title: 'Save and Encrypt Successful',
-        message: `The text has been saved and encrypted!`
-      });
+
+      notifier.notify({
+        title: 'Save and Encrypt Successfulу!',
+        message: 'The text has been saved and encrypted',
+        sound: true,
+        wait: true
+      })
+
     } catch (error) {
       console.error(`Error during save and encryption: ${error}\nDate the error occurred: ${GET_DATE}`);
       dialog.showMessageBox({
@@ -168,6 +216,7 @@ const renderPasswordWindow = () => {
 app.whenReady().then(() => {
   if (masterPasswordExists()) {
     renderPasswordInputWindow();
+    loadPasswordAndVerify();
   } else {
       renderPasswordWindow();
   }
