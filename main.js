@@ -7,6 +7,7 @@ import sjcl from "sjcl";
 import moment from "moment";
 import keytar from "keytar";
 import notifier from "node-notifier";
+import os from "os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
@@ -38,24 +39,25 @@ function masterPasswordExists() {
 }
 
 async function authenticateWithTouchID() {
+  if (process.platform === "darwin") {
+      try {
+          await systemPreferences.promptTouchID('Please put your finger on it for authentication');
+          console.log("Authentication via TouchID was successful!");
 
-  if(process.platform === "darwin" && systemPreferences.canPromptTouchID()){
-    systemPreferences.promptTouchID('Please put your finger on it for authentication"').then(async success => {
-      console.log("Authentication via TouchID was successful!");
-      const password = await keytar.getPassword("Password-Frog", "macos-password");
+          const passwordData = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
+          const password = passwordData.hashedPassword; 
 
-      if(password) {
-        console.log("The password from the Keychain has been found");
-        return password;
-      } else {
-        console.log("The password not found")
+          if (password) {
+              return password;
+          } else {
+              console.log("Password not found");
+              return null;
+          }
+      } catch (err) {
+          console.error("Authentication via Touch ID failed:", err);
       }
-    }).catch(err => {
-      console.log("Authentication via Touch ID failed")
-      console.log(err)
-    })
   } else {
-    console.log("TouchID is not available on this platform");
+      console.log("TouchID is not available on this platform");
   }
 }
 
@@ -63,12 +65,10 @@ async function loadPasswordAndVerify() {
   const password = await authenticateWithTouchID();
 
   if (password) {
-    console.log('Используем пароль для входа в приложение:', password);
-
-    // Pass the password to the main process for further verification
-    ipcMain.emit('verify-master-password', password);
+      console.log('Using password for login:', password);
+      mainView.webContents.send('fill-password-field', password);
   } else {
-    console.log('Не удалось получить пароль через Touch ID');
+      console.log('Failed to retrieve password using Touch ID');
   }
 }
 
@@ -151,11 +151,11 @@ const renderMainWindow = () => {
   ipcMain.on('save-and-encrypt-text', async (event, text) => {
     try {
       const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
-      const userFilesDir = path.dirname(encryptedFilePath); // Папка, в которой должен быть файл
+      const userFilesDir = path.dirname(encryptedFilePath); 
 
       // Check directory and create it if it not
       if (!fs.existsSync(userFilesDir)) {
-          fs.mkdirSync(userFilesDir, { recursive: true }); // Параметр { recursive: true } создаст все промежуточные каталоги
+          fs.mkdirSync(userFilesDir, { recursive: true }); 
           console.info(`Directory created at: ${userFilesDir}`);
       }
 
