@@ -7,8 +7,11 @@ document.getElementById('passwordInputForm').addEventListener('submit', (e) => {
 });
 
 window.electronAPI.onFillPasswordField((password) => {
-    document.getElementById('passwordInputField').value = password;
-    document.getElementById('passwordInputForm').submit();
+    const passwordInputField = document.getElementById('passwordInputField');
+    if (passwordInputField) {
+        passwordInputField.value = password;
+        document.getElementById('passwordInputForm').submit();
+    }
 });
 
 // Handle incorrect password feedback

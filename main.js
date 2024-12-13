@@ -66,7 +66,12 @@ async function loadPasswordAndVerify() {
 
   if (password) {
       console.log('Using password for login:', password);
-      mainView.webContents.send('fill-password-field', password);
+
+      if (passwordInputWindow && !passwordInputWindow.isDestroyed()) {
+          passwordInputWindow.webContents.send('fill-password-field', password);
+      } else {
+          console.log('Password input window is not available');
+      }
   } else {
       console.log('Failed to retrieve password using Touch ID');
   }
