@@ -44,36 +44,59 @@ async function authenticateWithTouchID() {
           await systemPreferences.promptTouchID('Please put your finger on it for authentication');
           console.log("Authentication via TouchID was successful!");
 
-          const passwordData = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
-          const password = passwordData.hashedPassword; 
+          const passwordData = getMasterPassword();
+          const hashedPassword = passwordData.hashedPassword;
 
-          if (password) {
-              return password;
+          if (hashedPassword) {
+              return hashedPassword;
           } else {
               console.log("Password not found");
               return null;
           }
       } catch (err) {
           console.error("Authentication via Touch ID failed:", err);
+          return null
       }
   } else {
       console.log("TouchID is not available on this platform");
+      return null
   }
 }
 
 async function loadPasswordAndVerify() {
+
   const password = await authenticateWithTouchID();
 
   if (password) {
-      console.log('Using password for login:', password);
+    console.log('Using password for login:', password);
 
-      if (passwordInputWindow && !passwordInputWindow.isDestroyed()) {
-          passwordInputWindow.webContents.send('fill-password-field', password);
+    if (passwordInputWindow && !passwordInputWindow.isDestroyed()) {
+      passwordInputWindow.close(); 
+    }
+
+    const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);  
+    const encryptedText = fs.readFileSync(encryptedFilePath, ENCODING);
+
+    try {
+      const decryptedText = sjcl.decrypt(password, encryptedText);
+
+      if (decryptedText) {
+        console.log('Successfully decrypted text.');
+
+        if (mainView) {
+          mainView.show();
+        } else {
+          renderMainWindow(); 
+        }
+
       } else {
-          console.log('Password input window is not available');
+        console.log('Failed to decrypt text.');
       }
+    } catch (error) {
+      console.error('Error during decryption:', error);
+    }
   } else {
-      console.log('Failed to retrieve password using Touch ID');
+    console.log('Failed to retrieve password using Touch ID');
   }
 }
 
