@@ -6,6 +6,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onPasswordIncorrect: (callback) => ipcRenderer.on('password-incorrect', callback),
     sendAndEncrypt: (text) => ipcRenderer.send('save-and-encrypt-text', text), 
     loadText: () => ipcRenderer.invoke('request-load-text'),
-
-    onFillPasswordField: (callback) => ipcRenderer.on('fill-password-field', callback),
 });
