@@ -5,9 +5,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import sjcl from "sjcl";
 import moment from "moment";
-import keytar from "keytar";
 import notifier from "node-notifier";
-import os from "os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
@@ -36,6 +34,14 @@ if (!process.env.USER_ENCRYPTED_FILE_PATH) {
 // function checks if master password exists
 function masterPasswordExists() {
   return fs.existsSync(passwordFilePath);
+}
+
+function getCurrentDatetime() {
+  return moment();
+}
+
+function getMasterPassword() {
+  return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
 }
 
 async function authenticateWithTouchID() {
@@ -137,14 +143,6 @@ const renderMainWindow = () => {
       mainView.hide(); // Hide the main window instead of closing
     }
   });
-
-  function getCurrentDatetime() {
-    return moment();
-  }
-
-  function getMasterPassword() {
-    return JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
-  }
 
   //add function for encrypt and unencrypt file for code's flexibility
   function encryptOrDecryptText(password, text, isEncrypting) {
