@@ -1,0 +1,23 @@
+@import './base.css';
+
+#app {
+  max-width: 1280px;
+  min-width: 300px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+.background_image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  flex: 1;
+}
+
+.background_image img {
+  flex-shrink: 0;
+  width: 30%;
+  height: 30%;
+}
