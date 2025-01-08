@@ -1,10 +1,12 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu } from 'electron';
 import path from 'path';
 import fs from 'fs-extra';
 import * as cryptoUtil from '../utils/crypto.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from "dotenv";
+import moment from 'moment';
+import sjcl from 'sjcl';
 
 // Disable hardware acceleration before app is ready
 app.disableHardwareAcceleration();
@@ -29,6 +31,27 @@ let mainWindow;
 const passwordFile = path.join(userDataPath, 'password.enc');
 const notesFile = path.join(userDataPath, 'notes.enc');
 let tray = null; // Tray should be initialized properly
+
+//function for get ti,e for logs
+function getCurrentDatetime() {
+  return moment();
+}
+
+//add function for encrypt and unencrypt file for code's flexibility 
+function encryptOrDecryptText(password, text, isEncrypting) {
+  try {
+    if (isEncrypting) {
+      return sjcl.encrypt(password, text);
+    } else {
+      return sjcl.decrypt(password, text);
+    }
+  } catch (error) {
+    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
+    app.isQuitting = true; 
+    app.quit(); 
+  }
+}
+
 
 function createWindow(view) {
   mainWindow = new BrowserWindow({
@@ -58,6 +81,39 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow('passwordPrompt');
   });
+
+  const iconPath = path.join(__dirname, "../renderer/assets/frogIconTemplate.png");
+  const icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+
+  tray = new Tray(icon);
+
+  tray.on('double-click', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+    }
+    tray.closeContextMenu();
+  });
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Close Frog-app",
+      type: "normal",
+      click: () => {
+        app.isQuitting = true; // for close app in cotext menu
+        if (mainWindow) {
+          mainWindow.close();
+        }
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.on("right-click", () => {
+    tray.popUpContextMenu(contextMenu);
+  });
+
+  tray.setContextMenu(contextMenu);
+  tray.setToolTip("Frog-app");
 });
 
 ipcMain.handle('set-password', async (event, password) => {
