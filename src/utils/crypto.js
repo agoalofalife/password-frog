@@ -1,9 +1,8 @@
 import crypto from 'crypto'; 
+import sjcl from 'sjcl';
 
-const ALGORITHM = 'aes-256-gcm'; 
 const KEY_LENGTH = 32;
 const SALT_LENGTH = 16;
-const IV_LENGTH = 16;
 
 // Derive key from password
 function deriveKey(password, salt) {
@@ -32,38 +31,19 @@ async function verifyPassword(password, saltHex, hashedKeyHex) {
   return crypto.timingSafeEqual(derivedKey, Buffer.from(hashedKeyHex, 'hex'));
 }
 
-// Encrypt text with password
-async function encryptText(text, password) {
-  const salt = crypto.randomBytes(SALT_LENGTH);
-  const key = await deriveKey(password, salt);
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-
-  let encrypted = cipher.update(text, 'utf8', 'base64');
-  encrypted += cipher.final('base64');
-  const authTag = cipher.getAuthTag();
-
-  return {
-    salt: salt.toString('hex'),
-    iv: iv.toString('hex'),
-    authTag: authTag.toString('hex'),
-    data: encrypted
-  };
+//add function for encrypt and unencrypt file for code's flexibility 
+function encryptOrDecryptText(password, text, isEncrypting) {
+  try {
+    if (isEncrypting) {
+      return sjcl.encrypt(password, text);
+    } else {
+      return sjcl.decrypt(password, text);
+    }
+  } catch (error) {
+    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
+    app.isQuitting = true; 
+    app.quit(); 
+  }
 }
 
-// Decrypt text with password
-async function decryptText(encData, password) {
-  const salt = Buffer.from(encData.salt, 'hex');
-  const iv = Buffer.from(encData.iv, 'hex');
-  const authTag = Buffer.from(encData.authTag, 'hex');
-  const key = await deriveKey(password, salt);
-
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-
-  let decrypted = decipher.update(encData.data, 'base64', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
-}
-
-export { hashPassword, verifyPassword, encryptText, decryptText };
+export { hashPassword, verifyPassword, encryptOrDecryptText };

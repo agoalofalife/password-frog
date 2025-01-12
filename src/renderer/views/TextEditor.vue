@@ -16,8 +16,13 @@ const route = useRoute();
 const password = decodeURIComponent(route.query.pw);
 
 onMounted(async () => {
-  const storedText = await window.api.loadNotes(password);
-  text.value = storedText;
+  try {
+    const storedText = await window.api.loadNotes(password);
+    text.value = storedText; 
+  } catch (error) {
+    console.error('Failed to load notes:', error.message);
+    alert('Failed to load notes. Please check the logs for details.');
+  }
 });
 
 async function saveNotes() {

@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from "dotenv";
 import moment from 'moment';
-import sjcl from 'sjcl';
 
 // Disable hardware acceleration before app is ready
 app.disableHardwareAcceleration();
@@ -29,29 +28,14 @@ console.info('Password File Path:', passwordFilePath);
 
 let mainWindow;
 const passwordFile = path.join(userDataPath, 'password.enc');
-const notesFile = path.join(userDataPath, 'notes.enc');
+const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
+const userFilesDir = path.dirname(encryptedFilePath);
 let tray = null; // Tray should be initialized properly
 
 //function for get ti,e for logs
 function getCurrentDatetime() {
   return moment();
 }
-
-//add function for encrypt and unencrypt file for code's flexibility 
-function encryptOrDecryptText(password, text, isEncrypting) {
-  try {
-    if (isEncrypting) {
-      return sjcl.encrypt(password, text);
-    } else {
-      return sjcl.decrypt(password, text);
-    }
-  } catch (error) {
-    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
-    app.isQuitting = true; 
-    app.quit(); 
-  }
-}
-
 
 function createWindow(view) {
   mainWindow = new BrowserWindow({
@@ -130,16 +114,36 @@ ipcMain.handle('verify-password', async (event, password) => {
 });
 
 ipcMain.handle('save-notes', async (event, { password, text }) => {
-  const encrypted = await cryptoUtil.encryptText(text, password);
-  fs.writeFileSync(notesFile, JSON.stringify(encrypted));
-  return true;
+  try {
+    if (!fs.existsSync(userFilesDir)) {
+      fs.mkdirSync(userFilesDir, { recursive: true });
+      console.info(`Directory created at: ${userFilesDir}`);
+    }
+
+    const encryptedText = cryptoUtil.encryptOrDecryptText(password, text, true); // true - шифрование
+
+    fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
+    console.info(`Encrypted text has been saved to ${encryptedFilePath}`);
+    return true;
+  } catch (error) {
+    console.error(`Error during save and encryption: ${error.message}`);
+    throw new Error('Failed to save and encrypt notes.');
+  }
 });
 
 ipcMain.handle('load-notes', async (event, password) => {
-  if (!fs.existsSync(notesFile)) {
-    return ''; // no notes yet
+  try {
+    if (!fs.existsSync(encryptedFilePath)) {;
+      return '';
+    }
+
+    const dencryptedText = fs.readFileSync(encryptedFilePath, ENCODING);
+
+    const decryptedText = cryptoUtil.encryptOrDecryptText(password, dencryptedText, false); 
+    console.info('Decryption successful.');
+    return decryptedText;
+  } catch (error) {
+    console.error(`Error during decryption: ${error.message}`);
+    throw new Error('Failed to load and decrypt notes.');
   }
-  const encData = JSON.parse(fs.readFileSync(notesFile, 'utf8'));
-  const decrypted = await cryptoUtil.decryptText(encData, password);
-  return decrypted;
 });
