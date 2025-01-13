@@ -1,5 +1,6 @@
 import crypto from 'crypto'; 
 import sjcl from 'sjcl';
+import moment from 'moment';
 
 const KEY_LENGTH = 32;
 const SALT_LENGTH = 16;

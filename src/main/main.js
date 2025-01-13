@@ -144,6 +144,6 @@ ipcMain.handle('load-notes', async (event, password) => {
     return decryptedText;
   } catch (error) {
     console.error(`Error during decryption: ${error.message}`);
-    throw new Error('Failed to load and decrypt notes.');
+    throw new Error("Failed to load and decrypt notes");
   }
 });
