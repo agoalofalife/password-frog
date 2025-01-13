@@ -1,7 +1,7 @@
 <template>
   <div class="text_editor">
     <TextArea v-model="text"></TextArea>
-    <SubmitButton @click="saveNotes">Save</SubmitButton>
+    <SubmitButton @click="saveNotes">Encrypt&Save text</SubmitButton>
   </div>
 </template>
 
@@ -27,7 +27,6 @@ onMounted(async () => {
 
 async function saveNotes() {
   await window.api.saveNotes(password, text.value);
-  alert("Notes saved securely!");
 }
 </script>
 

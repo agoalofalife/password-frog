@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from "dotenv";
 import moment from 'moment';
+import notifier from "node-notifier";
 
 // Disable hardware acceleration before app is ready
 app.disableHardwareAcceleration();
@@ -32,11 +33,6 @@ const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
 const userFilesDir = path.dirname(encryptedFilePath);
 let tray = null; // Tray should be initialized properly
 
-//function for get ti,e for logs
-function getCurrentDatetime() {
-  return moment();
-}
-
 function createWindow(view) {
   mainWindow = new BrowserWindow({
     width: 800, 
@@ -60,6 +56,7 @@ app.whenReady().then(() => {
   } else {
     // Password file exists => show password prompt view
     createWindow('passwordPrompt');
+    TouchID.loadPasswordAndVerify();
   }
 
   app.on('activate', function () {
@@ -71,7 +68,7 @@ app.whenReady().then(() => {
 
   tray = new Tray(icon);
 
-  tray.on('double-click', () => {
+  tray.on(process.platform === 'linux' ? 'click' : 'double-click', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
     }
@@ -97,7 +94,7 @@ app.whenReady().then(() => {
   });
 
   tray.setContextMenu(contextMenu);
-  tray.setToolTip("Frog-app");
+  tray.setToolTip("Frog-App");
 });
 
 ipcMain.handle('set-password', async (event, password) => {
@@ -108,7 +105,7 @@ ipcMain.handle('set-password', async (event, password) => {
 });
 
 ipcMain.handle('verify-password', async (event, password) => {
-  const content = JSON.parse(fs.readFileSync(passwordFile, 'utf8'));
+  const content = JSON.parse(fs.readFileSync(passwordFile, ENCODING));
   const isValid = await cryptoUtil.verifyPassword(password, content.salt, content.hashedKey);
   return isValid;
 });
@@ -120,13 +117,19 @@ ipcMain.handle('save-notes', async (event, { password, text }) => {
       console.info(`Directory created at: ${userFilesDir}`);
     }
 
-    const encryptedText = cryptoUtil.encryptOrDecryptText(password, text, true); // true - шифрование
+    const encryptedText = cryptoUtil.encryptOrDecryptText(password, text, true);
 
     fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
-    console.info(`Encrypted text has been saved to ${encryptedFilePath}`);
+    console.info(`Encrypted text has been saved to ${encryptedFilePath}\nTime: ${moment()}`);
+    notifier.notify({
+      title: 'Save and Encrypt Successfulу!',
+      message: 'The text has been saved and encrypted',
+      sound: true,
+      wait: true
+    })
     return true;
   } catch (error) {
-    console.error(`Error during save and encryption: ${error.message}`);
+    console.error(`Error during save and encryption: ${error.message}\nTime: ${moment()}`);
     throw new Error('Failed to save and encrypt notes.');
   }
 });
@@ -143,7 +146,7 @@ ipcMain.handle('load-notes', async (event, password) => {
     console.info('Decryption successful.');
     return decryptedText;
   } catch (error) {
-    console.error(`Error during decryption: ${error.message}`);
+    console.error(`Error during decryption: ${error.message}\nTime: ${moment()}`);
     throw new Error("Failed to load and decrypt notes");
   }
 });

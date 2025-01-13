@@ -41,7 +41,7 @@ function encryptOrDecryptText(password, text, isEncrypting) {
       return sjcl.decrypt(password, text);
     }
   } catch (error) {
-    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} at ${GET_DATE}`);
+    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} \nTime: ${moment()}`);
     app.isQuitting = true; 
     app.quit(); 
   }
