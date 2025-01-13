@@ -56,7 +56,6 @@ app.whenReady().then(() => {
   } else {
     // Password file exists => show password prompt view
     createWindow('passwordPrompt');
-    TouchID.loadPasswordAndVerify();
   }
 
   app.on('activate', function () {
