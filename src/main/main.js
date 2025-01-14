@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, systemPreferences } from 'electron';
 import path from 'path';
 import fs from 'fs-extra';
 import * as cryptoUtil from '../utils/crypto.js';
@@ -94,6 +94,29 @@ app.whenReady().then(() => {
 
   tray.setContextMenu(contextMenu);
   tray.setToolTip("Frog-App");
+});
+
+//Touch ID
+async function authenticateWithTouchID() {
+  if (process.platform === 'darwin') {  
+    try {
+      await systemPreferences.promptTouchID('Please authenticate with your fingerprint');
+      const content = JSON.parse(fs.readFileSync(passwordFile, ENCODING));
+      const { hashedKey } = content;
+      return hashedKey;  
+    } catch (err) {
+      console.error('Touch ID authentication failed:', err);
+      return null;  
+    }
+  } else {
+    console.log('Touch ID is not available on this platform');
+    return null; 
+  }
+}
+
+ipcMain.handle('loginWithTouchId', async () => {
+  const passwordHash = await authenticateWithTouchID();
+  return passwordHash; 
 });
 
 ipcMain.handle('set-password', async (event, password) => {
