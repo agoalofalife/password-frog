@@ -4,6 +4,7 @@ import moment from 'moment';
 
 const KEY_LENGTH = 32;
 const SALT_LENGTH = 16;
+const GET_CURRENT_DATE = moment();
 
 // Derive key from password
 function deriveKey(password, salt) {
@@ -41,7 +42,7 @@ function encryptOrDecryptText(password, text, isEncrypting) {
       return sjcl.decrypt(password, text);
     }
   } catch (error) {
-    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} \nTime: ${moment()}`);
+    console.error(`Error during ${isEncrypting ? 'encryption' : 'decryption'}: ${error} \nTime: ${GET_CURRENT_DATE}`);
     app.isQuitting = true; 
     app.quit(); 
   }

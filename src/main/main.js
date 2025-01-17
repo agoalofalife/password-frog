@@ -1,12 +1,12 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, systemPreferences } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu } from 'electron';
 import path from 'path';
 import fs from 'fs-extra';
 import * as cryptoUtil from '../utils/crypto.js';
+import * as touchIdUtil from '../utils/touchid.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from "dotenv";
 import moment from 'moment';
-import notifier from "node-notifier";
 
 // Disable hardware acceleration before app is ready
 app.disableHardwareAcceleration();
@@ -15,6 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
 const passwordFilePath = path.join(userDataPath, 'master-password.json');
 const ENCODING = 'utf8';
+const GET_CURRENT_DATE = moment();
 
 // load env variables
 dotenv.config();
@@ -96,26 +97,8 @@ app.whenReady().then(() => {
   tray.setToolTip("Frog-App");
 });
 
-//Touch ID
-async function authenticateWithTouchID() {
-  if (process.platform === 'darwin') {  
-    try {
-      await systemPreferences.promptTouchID('Please authenticate with your fingerprint');
-      const content = JSON.parse(fs.readFileSync(passwordFile, ENCODING));
-      const { hashedKey } = content;
-      return hashedKey;  
-    } catch (err) {
-      console.error('Touch ID authentication failed:', err);
-      return null;  
-    }
-  } else {
-    console.log('Touch ID is not available on this platform');
-    return null; 
-  }
-}
-
 ipcMain.handle('loginWithTouchId', async () => {
-  const passwordHash = await authenticateWithTouchID();
+  const passwordHash = await touchIdUtil.authenticateWithTouchID();
   return passwordHash; 
 });
 
@@ -142,16 +125,10 @@ ipcMain.handle('save-notes', async (event, { password, text }) => {
     const encryptedText = cryptoUtil.encryptOrDecryptText(password, text, true);
 
     fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
-    console.info(`Encrypted text has been saved to ${encryptedFilePath}\nTime: ${moment()}`);
-    notifier.notify({
-      title: 'Save and Encrypt Successfulу!',
-      message: 'The text has been saved and encrypted',
-      sound: true,
-      wait: true
-    })
+    console.info(`Encrypted text has been saved to ${encryptedFilePath}\nTime: ${GET_CURRENT_DATE}`);
     return true;
   } catch (error) {
-    console.error(`Error during save and encryption: ${error.message}\nTime: ${moment()}`);
+    console.error(`Error during save and encryption: ${error.message}\nTime: ${GET_CURRENT_DATE}`);
     throw new Error('Failed to save and encrypt notes.');
   }
 });
@@ -168,7 +145,7 @@ ipcMain.handle('load-notes', async (event, password) => {
     console.info('Decryption successful.');
     return decryptedText;
   } catch (error) {
-    console.error(`Error during decryption: ${error.message}\nTime: ${moment()}`);
+    console.error(`Error during decryption: ${error.message}\nTime: ${GET_CURRENT_DATE}`);
     throw new Error("Failed to load and decrypt notes");
   }
 });

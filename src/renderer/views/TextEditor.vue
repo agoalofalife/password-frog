@@ -27,6 +27,7 @@ onMounted(async () => {
 
 async function saveNotes() {
   await window.api.saveNotes(password, text.value);
+  alert('The text has been saved and encrypted');
 }
 </script>
 
