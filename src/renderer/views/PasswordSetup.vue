@@ -24,7 +24,7 @@ async function save() {
     return;
   }
   await window.api.setPassword(password.value);
-  router.push("/textEditor?pw=" + encodeURIComponent(password.value));
+  router.push(`/textEditor?pw=${encodeURIComponent(password.value)}`);
 }
 </script>
 

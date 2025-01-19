@@ -20,14 +20,13 @@ onMounted(async () => {
     const storedText = await window.api.loadNotes(password);
     text.value = storedText; 
   } catch (error) {
-    console.error('Failed to load notes:', error.message);
+    console.error(`Failed to load notes: ${error.message}`);
     alert('Failed to load notes. Please check the logs for details.');
   }
 });
 
 async function saveNotes() {
   await window.api.saveNotes(password, text.value);
-  alert('The text has been saved and encrypted');
 }
 </script>
 

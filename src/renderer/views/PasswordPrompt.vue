@@ -23,7 +23,7 @@ const isTouchIdAuthenticated = ref(false);
 async function login() {
   const valid = await window.api.verifyPassword(password.value);
   if (valid) {
-    router.push("/textEditor?pw=" + encodeURIComponent(password.value));
+    router.push(`/textEditor?pw=${encodeURIComponent(password.value)}`);
   } else {
     error.value = "Invalid password";
   }
@@ -33,7 +33,7 @@ async function loginWithTouchId() {
   const password = await window.api.loginWithTouchId(); 
   if (password) {
     isTouchIdAuthenticated.value = true;
-    router.push("/textEditor?pw=" + encodeURIComponent(password));
+    router.push(`/textEditor?pw=${encodeURIComponent(password)}`);
   } else {
     error.value = "Touch ID authentication failed";
   }

@@ -12,7 +12,7 @@ async function authenticateWithTouchID(passwordFilePath) {
       const { hashedKey } = content;
       return hashedKey;  
     } catch (err) {
-      console.error('Touch ID authentication failed:', err);
+      console.error(`Touch ID authentication failed:${err}`);
       return null;  
     }
   } else {

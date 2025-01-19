@@ -25,8 +25,8 @@ if (!process.env.USER_ENCRYPTED_FILE_PATH) {
   process.exit(1);
 }
 
-console.log('User Data Path:', userDataPath);
-console.info('Password File Path:', passwordFilePath);
+console.log(`User Data Path: ${userDataPath}`);
+console.log(`Password File Path: ${passwordFilePath}`);
 
 let mainWindow;
 const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
@@ -45,12 +45,13 @@ function createWindow(view) {
   });
   
   // Run the development server at localhost:4000
-  mainWindow.loadURL('http://localhost:4000/#/' + view);
+  mainWindow.loadURL(process.env.DEV_SERVER + view);
 }
 
 app.whenReady().then(() => {
   // Check if password file exists
   if (!fs.existsSync(passwordFilePath)) {
+    fs.removeSync(userFilesDir);
     // No password set yet => show password setup view
     createWindow('passwordSetup');
   } else {
