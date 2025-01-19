@@ -139,9 +139,9 @@ ipcMain.handle('load-notes', async (event, password) => {
       return '';
     }
 
-    const dencryptedText = fs.readFileSync(encryptedFilePath, ENCODING);
+    const encryptedText = fs.readFileSync(encryptedFilePath, ENCODING);
 
-    const decryptedText = cryptoUtil.encryptOrDecryptText(password, dencryptedText, false); 
+    const decryptedText = cryptoUtil.encryptOrDecryptText(password, encryptedText, false); 
     console.info('Decryption successful.');
     return decryptedText;
   } catch (error) {
