@@ -1,17 +1,14 @@
-import { app, systemPreferences } from 'electron';
+import { systemPreferences } from 'electron';
 import fs from 'fs-extra';
-import path from 'path';
 
-const userDataPath = app.getPath('userData');
-const passwordFile = path.join(userDataPath, 'password.enc');
 const ENCODING = 'utf8';
 
 
-async function authenticateWithTouchID() {
+async function authenticateWithTouchID(passwordFilePath) {
   if (process.platform === 'darwin') {  
     try {
       await systemPreferences.promptTouchID('Please authenticate with your fingerprint');
-      const content = JSON.parse(fs.readFileSync(passwordFile, ENCODING));
+      const content = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
       const { hashedKey } = content;
       return hashedKey;  
     } catch (err) {

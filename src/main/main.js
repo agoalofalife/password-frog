@@ -29,7 +29,6 @@ console.log('User Data Path:', userDataPath);
 console.info('Password File Path:', passwordFilePath);
 
 let mainWindow;
-const passwordFile = path.join(userDataPath, 'password.enc');
 const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
 const userFilesDir = path.dirname(encryptedFilePath);
 let tray = null; // Tray should be initialized properly
@@ -51,7 +50,7 @@ function createWindow(view) {
 
 app.whenReady().then(() => {
   // Check if password file exists
-  if (!fs.existsSync(passwordFile)) {
+  if (!fs.existsSync(passwordFilePath)) {
     // No password set yet => show password setup view
     createWindow('passwordSetup');
   } else {
@@ -98,19 +97,19 @@ app.whenReady().then(() => {
 });
 
 ipcMain.handle('loginWithTouchId', async () => {
-  const passwordHash = await touchIdUtil.authenticateWithTouchID();
+  const passwordHash = await touchIdUtil.authenticateWithTouchID(passwordFilePath);
   return passwordHash; 
 });
 
 ipcMain.handle('set-password', async (event, password) => {
   const { salt, hashedKey } = await cryptoUtil.hashPassword(password);
   const data = { salt, hashedKey };
-  fs.writeFileSync(passwordFile, JSON.stringify(data));
+  fs.writeFileSync(passwordFilePath, JSON.stringify(data));
   return true;
 });
 
 ipcMain.handle('verify-password', async (event, password) => {
-  const content = JSON.parse(fs.readFileSync(passwordFile, ENCODING));
+  const content = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   const isValid = await cryptoUtil.verifyPassword(password, content.salt, content.hashedKey);
   return isValid;
 });
