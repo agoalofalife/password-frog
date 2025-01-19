@@ -135,7 +135,7 @@ ipcMain.handle('save-notes', async (event, { password, text }) => {
 
 ipcMain.handle('load-notes', async (event, password) => {
   try {
-    if (!fs.existsSync(encryptedFilePath)) {;
+    if (!fs.existsSync(encryptedFilePath)) {
       return '';
     }
 
