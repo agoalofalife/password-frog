@@ -13,7 +13,7 @@ app.disableHardwareAcceleration();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const userDataPath = app.getPath('userData');
-const passwordFilePath = path.join(userDataPath, 'master-password.json');
+const passwordFilePath = path.join(userDataPath, 'master-password.enc');
 const ENCODING = 'utf8';
 const GET_CURRENT_DATE = moment();
 
@@ -121,8 +121,9 @@ ipcMain.handle('save-notes', async (event, { password, text }) => {
       fs.mkdirSync(userFilesDir, { recursive: true });
       console.info(`Directory created at: ${userFilesDir}`);
     }
-
-    const encryptedText = cryptoUtil.encryptOrDecryptText(password, text, true);
+    const content = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
+    const { hashedKey } = content;
+    const encryptedText = cryptoUtil.encryptOrDecryptText(hashedKey, text, true);
 
     fs.writeFileSync(encryptedFilePath, encryptedText, ENCODING);
     console.info(`Encrypted text has been saved to ${encryptedFilePath}\nTime: ${GET_CURRENT_DATE}`);
@@ -138,10 +139,11 @@ ipcMain.handle('load-notes', async (event, password) => {
     if (!fs.existsSync(encryptedFilePath)) {
       return '';
     }
-
+    const content = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
+    const { hashedKey } = content;
     const encryptedText = fs.readFileSync(encryptedFilePath, ENCODING);
 
-    const decryptedText = cryptoUtil.encryptOrDecryptText(password, encryptedText, false); 
+    const decryptedText = cryptoUtil.encryptOrDecryptText(hashedKey, encryptedText, false); 
     console.info('Decryption successful.');
     return decryptedText;
   } catch (error) {
