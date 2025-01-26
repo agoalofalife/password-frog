@@ -24,6 +24,11 @@ if (!process.env.USER_ENCRYPTED_FILE_PATH) {
   console.warn('Please check your .env file and set the USER_ENCRYPTED_FILE_PATH variable.');
   process.exit(1);
 }
+if (!process.env.DEV_SERVER) {
+  console.error('Error: DEV_SERVER is not defined in the .env file.');
+  console.warn('Please check your .env file and set the DEV_SERVER variable.');
+  process.exit(1);
+}
 
 console.log(`User Data Path: ${userDataPath}`);
 console.log(`Password File Path: ${passwordFilePath}`);
