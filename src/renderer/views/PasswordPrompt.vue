@@ -20,11 +20,12 @@ const router = useRouter();
 const isTouchIdAuthenticated = ref(false);
 
 async function login() {
-  const valid = await window.api.verifyPassword(password.value);
-  if (valid) {
+  const isValid = await window.api.verifyPassword(password.value);  // Проверка пароля
+  if (isValid) {
     router.push(`/textEditor?pw=${encodeURIComponent(password.value)}`);
   } else {
-    error.value = "Invalid password";
+    const hint = await window.api.getHint();
+    error.value = `Invalid password. Hint: ${hint || "No hint provided."}`;
   }
 }
 

@@ -37,6 +37,7 @@ let mainWindow;
 const encryptedFilePath = path.resolve(process.env.USER_ENCRYPTED_FILE_PATH);
 const userFilesDir = path.dirname(encryptedFilePath);
 let tray = null; // Tray should be initialized properly
+let currentHint = null;
 
 function createWindow(view) {
   mainWindow = new BrowserWindow({
@@ -107,9 +108,9 @@ ipcMain.handle('loginWithTouchId', async () => {
   return passwordHash; 
 });
 
-ipcMain.handle('set-password', async (event, password) => {
+ipcMain.handle('set-password', async (event, password, hint) => {
   const { salt, hashedKey } = await cryptoUtil.hashPassword(password);
-  const data = { salt, hashedKey };
+  const data = { salt, hashedKey, hint };
   fs.writeFileSync(passwordFilePath, JSON.stringify(data));
   return true;
 });
@@ -117,7 +118,16 @@ ipcMain.handle('set-password', async (event, password) => {
 ipcMain.handle('verify-password', async (event, password) => {
   const content = JSON.parse(fs.readFileSync(passwordFilePath, ENCODING));
   const isValid = await cryptoUtil.verifyPassword(password, content.salt, content.hashedKey);
+  if (!isValid) {
+    currentHint = content.hint; 
+  } else {
+    currentHint = null; 
+  }
   return isValid;
+});
+
+ipcMain.handle('get-hint', () => {
+  return currentHint;  // Возвращаем текущий hint
 });
 
 ipcMain.handle('save-notes', async (event, { password, text }) => {
