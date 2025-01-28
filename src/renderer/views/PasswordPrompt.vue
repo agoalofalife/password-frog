@@ -5,13 +5,12 @@
     <SubmitButton v-if="!isTouchIdAuthenticated" @click="login">Login with password</SubmitButton>
     <div class="error-container">
       <p v-if="error">{{ error }}</p>
-    <SubmitButton v-if="!isTouchIdAuthenticated && !error" @click="loginWithTouchId">Login with Touch ID</SubmitButton>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import SubmitButton from "../components/SubmitButton.vue";
 
@@ -35,9 +34,13 @@ async function loginWithTouchId() {
     isTouchIdAuthenticated.value = true;
     router.push(`/textEditor?pw=${encodeURIComponent(password)}`);
   } else {
-    error.value = "Touch ID authentication failed";
+    error.value = "Touch ID is not available";
   }
 }
+
+onMounted(()=> {
+    loginWithTouchId();
+});
 
 </script>
 
