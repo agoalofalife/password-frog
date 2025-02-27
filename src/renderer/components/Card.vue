@@ -13,20 +13,22 @@
                     <img class="type_icon" src="../assets/icons/activity-svgrepo-com.svg">
                     <p class="type_name">Password type</p>
                 </div>
-                <div>
-                    <form action="">
-
-                        <label for="fname">First Name</label>
-                        <input type="text" id="fname" name="firstname" placeholder="Your name..">
-
-                        <label for="lname">Last Name</label>
-                        <input type="text" id="lname" name="lastname" placeholder="Your last name..">
-
-                        <input type="submit" value="Submit">
-
-                    </form>
+                <div class="login_password_body">
+                    <div class="login_password_wrapper">
+                        <div class="login_password_header">Login</div>
+                        <div class="login_password_container">
+                            <div class="data_display_field">login</div>
+                            <img class="copy_img" src="../assets/icons/copy-svgrepo-com.svg">
+                        </div>
+                    </div>
+                    <div class="login_password_wrapper">
+                        <div class="login_password_header">Password</div>
+                        <div class="login_password_container">
+                            <div class="data_display_field">password</div>
+                            <img class="copy_img" src="../assets/icons/copy-svgrepo-com.svg">
+                        </div>
+                    </div>
                 </div>
-                <p class="card-description">Password text information</p>
                 <div class="bin_img_container">
                     <img class="bin_img" src="../assets/icons/bin.svg">
                 </div>
@@ -94,8 +96,7 @@
         z-index: 1;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: space-around;
+        justify-content: space-between;
         border: 2px solid transparent;
         border-radius: 25px;
     }
@@ -111,13 +112,17 @@
 
     .type_icon {
         width: 20px;
-        background-color: rgba(255, 255, 255, 0.5);
+        filter: invert(55%) sepia(12%) saturate(17%) hue-rotate(339deg) brightness(89%) contrast(84%);
         border: 1px solid transparent;
         border-radius: 4px;
     }
 
     .type_name {
         color: rgba(255, 255, 255, 0.5);
+    }
+
+    .login_password_body {
+        padding-left: 5%;
     }
 
     .card-title {
@@ -128,13 +133,54 @@
     .bin_img_container {
         padding-right: 5%;
         align-self: end;
+        padding-bottom: 2%;
     }
 
     .bin_img {
         width: 20px;
-        background-color: rgba(255, 255, 255, 0.5);
+        filter: invert(55%) sepia(12%) saturate(17%) hue-rotate(339deg) brightness(89%) contrast(84%);
         border: 1px solid transparent;
         border-radius: 4px;
     }
+
+    .login_password_body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .data_display_field {
+        border: 1px solid;
+        border-color: rgb(169, 169, 169);
+        border-radius: 4px;
+        width: 90%;
+        text-align: left;
+        padding-left: 3%;
+    }
+
+    .copy_img {
+        width: 20px;
+        filter: invert(55%) sepia(12%) saturate(17%) hue-rotate(339deg) brightness(89%) contrast(84%);
+    }
+
+    .login_password_container {
+        width: 95%;
+        display: flex;
+        justify-content: space-between;
+        gap: 5%;
+    }
+
+    .login_password_wrapper{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-bottom: 5%;
+    }
+
+    .login_password_header {
+        padding-bottom: 2%;
+    }
+
 </style>
   
