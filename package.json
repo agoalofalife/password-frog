@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "start-electron": "electron ."
+    "start-electron": "electron . --no-sandbox"
   },
   "dependencies": {
     "crypto": "^1.0.1",
