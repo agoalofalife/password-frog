@@ -46,7 +46,7 @@
     .flip-card {
         background-color: transparent;
         width: 300px;
-        height: 300px;
+        height: 230px;
         perspective: 1000px;
     }
 
@@ -127,7 +127,7 @@
 
     .card-title {
         font-size: 25px;
-        margin-top: 25%;
+        margin-top: 17%;
     }
 
     .bin_img_container {
