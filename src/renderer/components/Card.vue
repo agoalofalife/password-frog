@@ -1,6 +1,6 @@
 <template>
     <div class="card flip-card">
-        <div class="container-card bg-green-box flip-card-inner">
+        <div class="container-card bg-green-box flip-card-inner" :class="{ flip: isFlipped }" @click="handleClick">
             <div class="flip-card-front">
                 <div class="type_header">
                     <img class="type_icon" src="../assets/icons/activity-svgrepo-com.svg">
@@ -9,20 +9,14 @@
                 <p class="card-title">Password title</p>
             </div>
             <div class="flip-card-back">
-                <div class="type_header">
-                    <img class="type_icon" src="../assets/icons/activity-svgrepo-com.svg">
-                    <p class="type_name">Password type</p>
-                </div>
                 <div class="login_password_body">
                     <div class="login_password_wrapper">
-                        <div class="login_password_header">Login</div>
                         <div class="login_password_container">
                             <div class="data_display_field">login</div>
                             <img class="copy_img" src="../assets/icons/copy-svgrepo-com.svg">
                         </div>
                     </div>
                     <div class="login_password_wrapper">
-                        <div class="login_password_header">Password</div>
                         <div class="login_password_container">
                             <div class="data_display_field">password</div>
                             <img class="copy_img" src="../assets/icons/copy-svgrepo-com.svg">
@@ -38,7 +32,14 @@
 </template>
   
 <script setup>
+    import { ref } from 'vue';
 
+    const isFlipped = ref(false);
+
+    const handleClick = () => {
+        isFlipped.value = !isFlipped.value;
+        console.log("Flipped:", isFlipped.value);
+    };
 </script>
 
 <style scoped>
@@ -46,7 +47,7 @@
     .flip-card {
         background-color: transparent;
         width: 300px;
-        height: 230px;
+        height: 150px;
         perspective: 1000px;
     }
 
@@ -57,18 +58,16 @@
         text-align: center;
         transition: transform 0.6s;
         transform-style: preserve-3d;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-        backface-visibility: hidden;
-        -moz-backface-visibility: hidden;
     }
 
     .flip-card:focus {
         outline: 0;
     }
 
-    .flip-card:hover .flip-card-inner,
-    .flip-card:focus .flip-card-inner{
+
+    .flip {
         transform: rotateY(180deg);
+        z-index: 2;
     }
 
     .flip-card-front,
@@ -76,6 +75,7 @@
         position: absolute;
         width: 100%;
         height: 100%;
+        backface-visibility: hidden;
     }
 
     .flip-card-front {
@@ -87,6 +87,7 @@
         align-items: center;
         border: 2px solid transparent;
         border-radius: 25px;
+        backface-visibility: hidden;
     }
 
     .flip-card-back {
@@ -96,7 +97,7 @@
         z-index: 1;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: center;
         border: 2px solid transparent;
         border-radius: 25px;
     }
@@ -127,13 +128,13 @@
 
     .card-title {
         font-size: 25px;
-        margin-top: 17%;
+        margin-top: 3%;
     }
 
     .bin_img_container {
         padding-right: 5%;
         align-self: end;
-        padding-bottom: 2%;
+        padding-top: 2vh;
     }
 
     .bin_img {
@@ -147,6 +148,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        gap: 1.5vh;
     }
 
     .data_display_field {
@@ -175,7 +177,6 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        padding-bottom: 5%;
     }
 
     .login_password_header {
