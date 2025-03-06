@@ -2,3 +2,4 @@
 .env
 .idea
 user_files/
+package-lock.json
