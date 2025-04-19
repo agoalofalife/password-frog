@@ -38,6 +38,12 @@
 <script setup>
 import { ref } from "vue";
 
+defineProps({
+  title: String,
+  login: String,
+  password: String
+});
+
 const isFlipped = ref(false);
 
 const handleClick = () => {
