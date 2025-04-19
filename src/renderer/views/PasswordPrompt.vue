@@ -22,7 +22,7 @@ const isTouchIdAuthenticated = ref(false);
 async function login() {
   const isValid = await window.api.verifyPassword(password.value);  // Проверка пароля
   if (isValid) {
-    router.push(`/textEditor?pw=${encodeURIComponent(password.value)}`);
+    router.push(`/CardsView?pw=${encodeURIComponent(password.value)}`);
   } else {
     const hint = await window.api.getHint();
     error.value = `Invalid password. Hint: ${hint || "No hint provided."}`;
@@ -33,7 +33,7 @@ async function loginWithTouchId() {
   const password = await window.api.loginWithTouchId(); 
   if (password) {
     isTouchIdAuthenticated.value = true;
-    router.push(`/textEditor?pw=${encodeURIComponent(password)}`);
+    router.push(`/CardsView?pw=${encodeURIComponent(password)}`);
   } else {
     error.value = "Touch ID is not available";
   }

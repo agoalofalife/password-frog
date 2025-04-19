@@ -7,11 +7,13 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import PasswordSetup from './views/PasswordSetup.vue'
 import PasswordPrompt from './views/PasswordPrompt.vue'
 import TextEditor from './views/TextEditor.vue'
+import CardsView from './views/CardsView.vue'
 
 const routes = [
   { path: '/passwordSetup', component: PasswordSetup },
   { path: '/passwordPrompt', component: PasswordPrompt },
   { path: '/textEditor', component: TextEditor },
+  { path: '/cardsView', component: CardsView },
   { path: '/', redirect: '/passwordPrompt' }
 ]
 
